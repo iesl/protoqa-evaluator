@@ -11,7 +11,6 @@ from scipy.optimize import linear_sum_assignment
 def exact_match(pred_answer: str, true_answer: str) -> float:
     return float(pred_answer == true_answer)
 
-
 ##########################################################################
 # Functions which take a list of pred_answers and true_answers,
 # and return a score matrix (pred_answers x true_answers)

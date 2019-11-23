@@ -7,7 +7,7 @@ def general_eval(pred_answers, true_answers,
                  max_pred_answers: Optional[int] = None,
                  max_incorrect: Optional[int] = None,
                  answer_cluster_scoring_func: Callable = exact_match,
-                 ceil_score_matrix: bool = False,
+                 score_matrix_transformation: Optional[Callable] = None,
                  assign_cluster_scores: bool = True,
                  calc_oracle_score: bool = True,
                  ) -> float:
@@ -16,8 +16,8 @@ def general_eval(pred_answers, true_answers,
     score_matrix = pred_true_pairwise_scores(pred_answers, true_answers, answer_cluster_scoring_func)
     if max_incorrect is not None:
         score_matrix = limit_total_wrong(score_matrix, max_incorrect)
-    if ceil_score_matrix:
-        score_matrix = np.ceil(score_matrix)
+    if score_matrix_transformation is not None:
+        score_matrix = score_matrix_transformation(score_matrix)
     if assign_cluster_scores:
         score_matrix *= np.array(list(true_answers.values()))[None]
     score = get_optimal_score(score_matrix)
