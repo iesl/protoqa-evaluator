@@ -2,12 +2,13 @@ from .scoring import *
 from functools import partial
 from typing import *
 
+
 def general_eval(pred_answers, true_answers,
                  max_pred_answers: Optional[int] = None,
                  max_incorrect: Optional[int] = None,
                  answer_cluster_scoring_func: Callable = exact_match,
                  assign_cluster_scores: bool = True,
-                 calc_oracle_score: Callable = lambda *args, **kwargs: 1,
+                 calc_oracle_score: bool = True,
                  ) -> float:
     if max_pred_answers is not None:
         pred_answers = pred_answers[:max_pred_answers]
@@ -16,22 +17,21 @@ def general_eval(pred_answers, true_answers,
         score_matrix = limit_total_wrong(score_matrix, max_incorrect)
     if assign_cluster_scores:
         score_matrix *= np.array(list(true_answers.values()))[None]
-    oracle_score = calc_oracle_score(pred_answers=pred_answers, true_answers=true_answers,
+    score = get_optimal_score(score_matrix)
+    if calc_oracle_score:
+        oracle_answers = sorted(list(true_answers.keys()), key=lambda z: true_answers[z], reverse=True)
+        oracle_score = general_eval(pred_answers=oracle_answers, true_answers=true_answers,
                                      max_pred_answers=max_pred_answers, max_incorrect=max_incorrect,
                                      answer_cluster_scoring_func=answer_cluster_scoring_func,
                                      assign_cluster_scores=assign_cluster_scores,
-                                     calc_oracle_score=lambda *args, **kwargs: 1)
-    return get_optimal_score(score_matrix) / oracle_score
+                                     calc_oracle_score=False)
+        score /= oracle_score
+    return score
 
-fast_money = partial(general_eval,
-                     max_pred_answers = 1,
-                     calc_oracle_score= lambda *args, true_answers, **kwargs: max(true_answers.values()),
-                     )
+fast_money = partial(general_eval, max_pred_answers = 1)
 
-family_feud = partial(general_eval,
-                      max_incorrect = 3,
-                      calc_oracle_score = lambda *args, true_answers, **kwargs: sum(true_answers.values()),
-                      )
+family_feud = partial(general_eval, max_incorrect = 3)
+
 
 # Direct implementations of some of the simpler algorithms,
 # without the functional structure of the general setting.
