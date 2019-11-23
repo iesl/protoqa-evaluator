@@ -32,6 +32,7 @@ fast_money = partial(general_eval, max_pred_answers = 1)
 
 family_feud = partial(general_eval, max_incorrect = 3)
 
+set_intersection = partial(general_eval, assign_cluster_scores = False)
 
 # Direct implementations of some of the simpler algorithms,
 # without the functional structure of the general setting.
