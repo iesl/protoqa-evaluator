@@ -1,4 +1,5 @@
 from .scoring import *
+from .data_processing import default_string_preprocessing
 from functools import partial
 from typing import *
 
@@ -6,6 +7,7 @@ from typing import *
 def general_eval(pred_answers, true_answers,
                  max_pred_answers: Optional[int] = None,
                  max_incorrect: Optional[int] = None,
+                 string_preprocessing: Callable = default_string_preprocessing,
                  answer_cluster_scoring_func: Callable = exact_match,
                  score_matrix_transformation: Optional[Callable] = None,
                  assign_cluster_scores: bool = True,
@@ -13,6 +15,7 @@ def general_eval(pred_answers, true_answers,
                  ) -> float:
     if max_pred_answers is not None:
         pred_answers = pred_answers[:max_pred_answers]
+    pred_answers = [default_string_preprocessing(pred_answer) for pred_answer in pred_answers]
     score_matrix = pred_true_pairwise_scores(pred_answers, true_answers, answer_cluster_scoring_func)
     if max_incorrect is not None:
         score_matrix = limit_total_wrong(score_matrix, max_incorrect)

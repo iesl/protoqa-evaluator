@@ -14,13 +14,13 @@ def exact_match(pred_answer: str, true_answer: str) -> float:
 
 
 def longest_common_substring_score(pred_answer: str, true_answer: str) -> float:
-    sm = SequenceMatcher(None, pred_answer.lower(), true_answer)
+    sm = SequenceMatcher(None, pred_answer, true_answer)
     match = sm.find_longest_match(0, len(pred_answer), 0, len(true_answer))
     return match.size / max(len(pred_answer), len(true_answer))
 
 
 def longest_common_subsequence_score(pred_answer: str, true_answer: str) -> float:
-    sm = SequenceMatcher(None, pred_answer.lower(), true_answer)
+    sm = SequenceMatcher(None, pred_answer, true_answer)
     lcsubseq_size = sum([block.size for block in sm.get_matching_blocks()])
     return lcsubseq_size / max(len(pred_answer), len(true_answer))
 

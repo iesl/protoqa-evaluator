@@ -17,3 +17,9 @@ def load_data_from_jsonl(data_path:Union[Path,str]):
 
 # def filter_questions:
 #     nltk.download('punkt') # needed for tokenization
+
+
+def default_string_preprocessing(pred_answer: str, length_limit:int = 50) -> str:
+    return pred_answer.lower()[:length_limit]
+
+
