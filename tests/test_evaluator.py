@@ -13,7 +13,12 @@ eval_methods = {
     'soft_jaro_winkler_set_intersection': partial(set_intersection, answer_cluster_scoring_func=jaro_winkler_similarity),
     'hard_jaro_winkler_set_intersection': partial(set_intersection,
                                                   answer_cluster_scoring_func=jaro_winkler_similarity,
-                                                  score_matrix_transformation=lambda z: np.round(z)),
+                                                  score_matrix_transformation=lambda z: np.round(z)
+                                                  ),
+    'hard_lcs_set_int': partial(set_intersection,
+                                answer_cluster_scoring_func=longest_common_substring_ratio,
+                                score_matrix_transformation=lambda z: np.round(z)
+                                ),
 }
 
 answer_set_10_60_30 = {"10": 10, "60": 60, "30": 30}
@@ -31,7 +36,7 @@ testdata = (
     ('three_wrong_right_away', ['X', 'X', 'X', '10', 'X', '60'], answer_set_10_60_30, {'family_feud': 0.0, 'fast_money': 0.0, 'family_feud_5_incorrect': 0.7, 'set_intersection': 2/3}),
     ('two_wrong', ['30', 'X', '10', 'X', '60'], answer_set_10_60_30, {'family_feud': 1.0, 'family_feud_2_incorrect': 0.4, 'set_intersection': 1.0}),
     ('many_repeats_should_not_penalize', ['30', '30', '30', '30', '30','30','60'], answer_set_10_60_30, {'family_feud': 0.9, 'family_feud_2_incorrect': 0.9, 'family_feud_5_incorrect': 0.9, 'set_intersection': 2/3}),
-    ('sloppy_input_answers', ['an Apple', 'X', 'the Banannnaa'], answer_set_Apple10_Bananna60_Carrot30, {'family_feud': 0.0, 'set_intersection': 0.0, 'hard_jaro_winkler_set_intersection': 2/3}),
+    ('sloppy_input_answers', ['an Apple', 'X', 'the Banannnaa'], answer_set_Apple10_Bananna60_Carrot30, {'family_feud': 0.0, 'set_intersection': 0.0, 'hard_jaro_winkler_set_intersection': 2/3, 'hard_lcs_set_int': 1/3}),
 )
 
 testdata_param_dict = {k + '][' + e[0]: (eval_methods[k], e[1], e[2], v) for e in testdata for k, v in e[3].items()}

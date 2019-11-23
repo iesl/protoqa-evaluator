@@ -2,6 +2,7 @@ from typing import *
 import numpy as np
 from itertools import product
 from scipy.optimize import linear_sum_assignment
+from difflib import SequenceMatcher
 
 
 #################################################################
@@ -10,6 +11,12 @@ from scipy.optimize import linear_sum_assignment
 ##################################################################
 def exact_match(pred_answer: str, true_answer: str) -> float:
     return float(pred_answer == true_answer)
+
+
+def longest_common_substring_ratio(pred_answer: str, true_answer: str) -> float:
+    sm = SequenceMatcher(None, pred_answer.lower(), true_answer)
+    match = sm.find_longest_match(0, len(pred_answer), 0, len(true_answer))
+    return match.size / max(len(pred_answer), len(true_answer))
 
 ##########################################################################
 # Functions which take a list of pred_answers and true_answers,
