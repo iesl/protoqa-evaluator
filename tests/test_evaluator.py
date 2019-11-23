@@ -6,6 +6,7 @@ eval_methods = {
     'family_feud': family_feud,
     'fast_money': fast_money,
     'family_feud_2_incorrect': partial(family_feud, max_incorrect=2),
+    'family_feud_5_incorrect': partial(family_feud, max_incorrect=5),
 }
 
 answer_set_10_60_30 = {"10": 10, "60": 60, "30": 30}
@@ -23,7 +24,11 @@ testdata = (
     ('wrong_order', ['10', '30', '60'], answer_set_10_60_30, {'family_feud': 1.0, 'fast_money': 1/6}),
     ('no_double_counting', ['60', '60', '60'], answer_set_10_60_30, {'family_feud': 0.6, 'fast_money': 1}),
     ('three_wrong', ['30', 'X', 'X', '10', 'X', '60'], answer_set_10_60_30, {'family_feud': 0.4, 'fast_money': 0.5}),
+    ('three_wrong_right_away', ['X', 'X', 'X', '10', 'X', '60'], answer_set_10_60_30, {'family_feud': 0.0, 'fast_money': 0.0, 'family_feud_5_incorrect': 0.7}),
     ('two_wrong', ['30', 'X', '10', 'X', '60'], answer_set_10_60_30, {'family_feud': 1.0, 'family_feud_2_incorrect': 0.4}),
+    ('many_repeats_should_not_penalize', ['30', '30', '30', '30', '30','30','60'], answer_set_10_60_30,
+     {'family_feud': 0.9, 'family_feud_2_incorrect': 0.9, 'family_feud_5_incorrect': 0.9}),
+    # ('sloppy_input_answers', ['the number 30', 'X', 'the 60'], answer_set_10_60_30, {'family_feud_with_partial_score': }
 )
 
 testdata_param_dict = {k + '][' + e[0]: (eval_methods[k], e[1], e[2], v) for e in testdata for k, v in e[3].items()}
@@ -59,6 +64,7 @@ def test_parametrized(eval_method, pred_answers, true_answers, expected):
 
 def test_actual_no_match(evaluator):
     assert evaluator(q0=["something else"]) == {'q0':{'family feud': 0.0, 'fast money': 0.0}}
+
 
 def test_actual_no_double_counting(evaluator):
     assert evaluator(q0=["umbrella", "umbrella", "umbrella", "umbrella"]) == {'q0': {'family feud': 38/99, 'fast money': 1}}
