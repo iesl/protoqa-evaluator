@@ -8,12 +8,12 @@ import json
 # stop_words = set(stopwords.words('english'))
 
 def load_data_from_jsonl(data_path:Union[Path,str]):
-    questions = dict()
+    question_data = dict()
     with open(data_path) as data:
         for q in data:
             q_json = json.loads(q)
-            questions[q_json['questionid']] = q_json
-    return questions
+            question_data[q_json['questionid']] = q_json
+    return question_data
 
 # def filter_questions:
 #     nltk.download('punkt') # needed for tokenization

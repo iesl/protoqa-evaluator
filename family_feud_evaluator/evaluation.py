@@ -4,6 +4,15 @@ from functools import partial
 from typing import *
 
 
+def evaluate(evaluation_func: Callable, question_data: Dict, answers_dict: Dict[str,List[str]]) -> Dict[str,float]:
+    scores = dict()
+    for qid, pred_answers in answers_dict.items():
+        true_q = question_data[qid]
+        true_answers = true_q['answers-cleaned'].copy()
+        scores[qid] = evaluation_func(pred_answers, true_answers)
+    return scores
+
+
 def general_eval(pred_answers, true_answers,
                  max_pred_answers: Optional[int] = None,
                  max_incorrect: Optional[int] = None,

@@ -46,25 +46,6 @@ testdata = (
 testdata_param_dict = {k + '][' + e[0]: (eval_methods[k], e[1], e[2], v) for e in testdata for k, v in e[3].items()}
 
 
-@pytest.fixture()
-def data_path():
-    return "data_stub.jsonl"
-
-
-@pytest.fixture()
-def evaluator(data_path):
-    return Evaluator(data_path)
-
-
-def test_load_data(data_path):
-    Evaluator(data_path)
-
-
-def test_access_data(evaluator):
-    for i in range(5):
-        evaluator._questions[f'q{i}']
-
-
 @pytest.mark.parametrize(
     "eval_method, pred_answers, true_answers, expected",
     list(testdata_param_dict.values()),
@@ -74,9 +55,35 @@ def test_parametrized(eval_method, pred_answers, true_answers, expected):
     assert eval_method(pred_answers, true_answers) == expected
 
 
-def test_actual_no_match(evaluator):
-    assert evaluator(q0=["something else"]) == {'q0':{'family feud': 0.0, 'fast money': 0.0}}
+@pytest.fixture()
+def data_path():
+    return "data_stub.jsonl"
+
+def test_load_data(data_path):
+    load_data_from_jsonl(data_path)
+
+@pytest.fixture()
+def question_data(data_path):
+    return load_data_from_jsonl(data_path)
 
 
-def test_actual_no_double_counting(evaluator):
-    assert evaluator(q0=["umbrella", "umbrella", "umbrella", "umbrella"]) == {'q0': {'family feud': 38/99, 'fast money': 1}}
+def test_access_data(question_data):
+    for i in range(5):
+        question_data[f'q{i}']
+
+
+def test_evaluate_single_question(question_data):
+    assert evaluate(family_feud, question_data, answers_dict={'q0':["something else"]}) == {'q0':0.0}
+
+@pytest.fixture()
+def answers_5():
+    return {
+        'q0': ['umbrella', 'sunscreen', 'towel', 'sun glasses'],
+        'q1': ['bed', 'shower', 'bathroom'],
+        'q2': ['baby crying'],
+        'q3': ['10'], # These aren't great... we might want to filter out answers which are purely numbers.
+        'q4': ['40'],
+    }
+
+def test_evaluate_multiple_questions(answers_5, question_data):
+    assert evaluate(set_intersection, question_data, answers_dict=answers_5) == {'q0': 2/6, 'q1': 2/7, 'q2': 0, 'q3': 1/7, 'q4':1/5}
