@@ -1,7 +1,7 @@
 from __future__ import annotations
 from .scoring import *
 from .data_processing import load_data_from_jsonl
-from .evaluation_functions import family_feud, fast_money
+from .evaluation import family_feud, fast_money
 from typing import *
 
 if TYPE_CHECKING:

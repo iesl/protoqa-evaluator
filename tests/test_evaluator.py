@@ -1,6 +1,6 @@
 import pytest
 from family_feud_evaluator import *
-from family_feud_evaluator.evaluation_functions import *
+from family_feud_evaluator.evaluation import *
 from functools import partial
 
 eval_methods = {
