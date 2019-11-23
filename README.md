@@ -23,7 +23,7 @@ from functools import partial
 
 soft_lcsubsequence_set_int = partial(
     general_eval,
-    answer_cluster_scoring_func=longest_common_subsequence_score,
+    answer_cluster_scoring_func = longest_common_subsequence_score,
     assign_cluster_scores = False, # This is what makes it a set, it turns off the cluster counts
 )
 
@@ -32,4 +32,4 @@ evaluate(soft_lcsubsequence_set_int, question_data,
 # Returns: {'q0': 0.3896103896103896}
 ```
 
-For each question, the score which is returned is the percentage out of the maximum which could have been received, ie. percentage of oracle score. (This is calculated automatically, regardless of evaluation method, by passing the actual answers back into the function.) In situations with partial scoring for answers, it is possible for a single answer to score positively with more than one cluster (eg. "sun hat" would get a positive score with "hat" and "sun glasses"). In these scenarios the evaluation always makes the optimal assignment of answers to clusters using the Munkres algorithm.
+For each question, the score which is returned is the percentage out of the maximum which could have been received, ie. percentage of oracle score. (This is calculated automatically, regardless of evaluation method, by passing the actual answers back into the function.) In situations with partial scoring for answers, it is possible for a single answer to score positively with more than one cluster (eg. "sun hat" would get a positive score with "hat" and "sun glasses"). In these scenarios the evaluation always makes the optimal assignment of answers to clusters using the Munkres assignment algorithm.
