@@ -73,7 +73,7 @@ def test_access_data(question_data):
 
 
 def test_evaluate_single_question(question_data):
-    assert evaluate(family_feud, question_data, answers_dict={'q0':["something else"]}) == {'q0':0.0}
+    assert evaluate(family_feud, question_data, answers_dict={'q0':["umbrella", "hat", "towel"]}) == {'q0':38/99}
 
 @pytest.fixture()
 def answers_5():
@@ -85,5 +85,17 @@ def answers_5():
         'q4': ['40'],
     }
 
+
 def test_evaluate_multiple_questions(answers_5, question_data):
     assert evaluate(set_intersection, question_data, answers_dict=answers_5) == {'q0': 2/6, 'q1': 2/7, 'q2': 0, 'q3': 1/7, 'q4':1/5}
+
+
+def test_readme_example(question_data):
+    soft_lcsubsequence_set_int = partial(
+        general_eval,
+        answer_cluster_scoring_func=longest_common_subsequence_score,
+        assign_cluster_scores = False, # This is what makes it a set, it turns off the cluster counts
+    )
+
+    assert evaluate(soft_lcsubsequence_set_int, question_data,
+                    answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']}) == {'q0': 0.3896103896103896}
