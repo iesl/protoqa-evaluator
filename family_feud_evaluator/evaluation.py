@@ -4,7 +4,7 @@ from functools import partial
 from typing import *
 
 
-def evaluate(evaluation_func: Callable, question_data: Dict, answers_dict: Dict[str,List[str]]) -> Dict[str,float]:
+def evaluate(evaluation_func: Callable, question_data: Dict, answers_dict: Dict[str, List[str]]) -> Dict[str, float]:
     scores = dict()
     for qid, pred_answers in answers_dict.items():
         true_q = question_data[qid]
@@ -14,6 +14,7 @@ def evaluate(evaluation_func: Callable, question_data: Dict, answers_dict: Dict[
 
 
 def general_eval(pred_answers, true_answers,
+                 *,
                  max_pred_answers: Optional[int] = None,
                  max_incorrect: Optional[int] = None,
                  string_preprocessing: Callable = default_string_preprocessing,
@@ -24,7 +25,7 @@ def general_eval(pred_answers, true_answers,
                  ) -> float:
     if max_pred_answers is not None:
         pred_answers = pred_answers[:max_pred_answers]
-    pred_answers = [default_string_preprocessing(pred_answer) for pred_answer in pred_answers]
+    pred_answers = [string_preprocessing(pred_answer) for pred_answer in pred_answers]
     score_matrix = pred_true_pairwise_scores(pred_answers, true_answers, answer_cluster_scoring_func)
     if max_incorrect is not None:
         score_matrix = limit_total_wrong(score_matrix, max_incorrect)
@@ -36,23 +37,28 @@ def general_eval(pred_answers, true_answers,
     if calc_oracle_score:
         oracle_answers = sorted(list(true_answers.keys()), key=lambda z: true_answers[z], reverse=True)
         oracle_score = general_eval(pred_answers=oracle_answers, true_answers=true_answers,
-                                     max_pred_answers=max_pred_answers, max_incorrect=max_incorrect,
-                                     answer_cluster_scoring_func=answer_cluster_scoring_func,
-                                     assign_cluster_scores=assign_cluster_scores,
-                                     calc_oracle_score=False)
+                                    max_pred_answers=max_pred_answers, max_incorrect=max_incorrect,
+                                    string_preprocessing=string_preprocessing,
+                                    answer_cluster_scoring_func=answer_cluster_scoring_func,
+                                    assign_cluster_scores=assign_cluster_scores,
+                                    calc_oracle_score=False,
+                                    )
         score /= oracle_score
     return score
 
-fast_money = partial(general_eval, max_pred_answers = 1)
 
-family_feud = partial(general_eval, max_incorrect = 3)
+fast_money = partial(general_eval, max_pred_answers=1)
 
-set_intersection = partial(general_eval, assign_cluster_scores = False)
+family_feud = partial(general_eval, max_incorrect=3)
+
+set_intersection = partial(general_eval, assign_cluster_scores=False)
+
 
 # Direct implementations of some of the simpler algorithms,
 # without the functional structure of the general setting.
 # Useful for testing, in case something in the more general setting goes wrong.
-def naive_family_feud(pred_answers: List[str], true_answers: Dict[str, int], *args, max_incorrect:int = 3, **kwargs):
+def naive_family_feud(pred_answers: List[str], true_answers: Dict[str, int],
+                      *args, max_incorrect: int = 3, **kwargs) -> float:
     pred_answers = pred_answers.copy()
     true_answers = true_answers.copy()
     score = 0
