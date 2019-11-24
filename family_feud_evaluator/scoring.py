@@ -1,8 +1,8 @@
-from typing import *
 import numpy as np
-from itertools import product
 from scipy.optimize import linear_sum_assignment
-from difflib import SequenceMatcher, get_close_matches
+from difflib import SequenceMatcher
+from itertools import product
+from typing import *
 
 
 #################################################################
@@ -23,6 +23,7 @@ def longest_common_subsequence_score(pred_answer: str, true_answer: str) -> floa
     sm = SequenceMatcher(None, pred_answer, true_answer)
     lcsubseq_size = sum([block.size for block in sm.get_matching_blocks()])
     return lcsubseq_size / max(len(pred_answer), len(true_answer))
+
 
 ##########################################################################
 # Functions which take a list of pred_answers and true_answers,

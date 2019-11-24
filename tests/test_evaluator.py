@@ -2,7 +2,12 @@ import pytest
 from family_feud_evaluator import *
 from family_feud_evaluator.evaluation import *
 from functools import partial
-from nltk.metrics.distance import jaro_winkler_similarity
+from pathlib import Path
+
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    from nltk.metrics.distance import jaro_winkler_similarity
 
 eval_methods = {
     'family_feud': family_feud,
@@ -57,7 +62,8 @@ def test_parametrized(eval_method, pred_answers, true_answers, expected):
 
 @pytest.fixture()
 def data_path():
-    return "data_stub.jsonl"
+    mod_path = Path(__file__).parent
+    return mod_path / "data_stub.jsonl"
 
 def test_load_data(data_path):
     load_data_from_jsonl(data_path)
