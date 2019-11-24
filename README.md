@@ -1,4 +1,11 @@
-API and methods for evaluating Family Feud style question/answers.
+## API and functions for evaluating Family Feud style question/answers.
+
+Clone via git and install (preferably in a virtual environment) with pip:
+```bash
+# conda activate family_feud_evaluator (or similar)
+git clone https://gitlab.com/boratko/family_feud_evaluator
+pip install -e family_feud_evaluator
+```
 
 Example use:
 ```python
@@ -33,3 +40,14 @@ evaluate(soft_lcsubsequence_set_int, question_data,
 ```
 
 For each question, the score which is returned is the percentage out of the maximum which could have been received, ie. percentage of oracle score. (This is calculated automatically, regardless of evaluation method, by passing the actual answers back into the function.) In situations with partial scoring for answers, it is possible for a single answer to score positively with more than one cluster (eg. "sun hat" would get a positive score with "hat" and "sun glasses"). In these scenarios the evaluation always makes the optimal assignment of answers to clusters using the Munkres assignment algorithm.
+
+
+### Testing
+The package has tests written with `pytest`, and one of the tests also requires `nltk` (as it uses the Jaro-Winkler string similarity function). If you already have these dependencies installed you can skip this step, but in order to install test dependencies you can run
+```bash
+pip install -e family_feud_evaluator[test]
+```
+You can run the tests with
+```bash
+pytest family_feud_evaluator
+```
