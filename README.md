@@ -1,8 +1,8 @@
 ## API and functions for evaluating Family Feud style question/answers.
 
-Clone via git and install (preferably in a virtual environment) with pip:
+Clone via git and install (preferably in the same virtual environment as your model) with pip:
 ```bash
-# conda activate family_feud_evaluator (or similar)
+# conda activate family_feud (or similar)
 git clone https://gitlab.com/boratko/family_feud_evaluator
 pip install -e family_feud_evaluator
 ```
