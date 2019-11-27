@@ -3,6 +3,7 @@ from family_feud_evaluator import *
 from family_feud_evaluator.evaluation import *
 from functools import partial
 from pathlib import Path
+import tempfile
 
 import warnings
 with warnings.catch_warnings():
@@ -244,3 +245,24 @@ crowdsource_answers = {
 
 def test_crowdsource_eval_mult():
     assert evaluate(set_intersection, q_dict, answers_dict=crowdsource_answers) == {'q0': 1/4, 'q1': 1}
+
+
+@pytest.fixture()
+def crowdsource_jsonl_path():
+    mod_path = Path(__file__).parent
+    return mod_path / "crowdsource_data_stub.jsonl"
+
+
+def test_crowdsource_data_save(tmpdir):
+    crowdsource_jsonl_write_path = tmpdir.join('crowdsource_data_stub.jsonl')
+    save_question_cluster_data_to_jsonl(crowdsource_jsonl_write_path, q_dict)
+    assert load_data_from_jsonl(crowdsource_jsonl_write_path) == q_dict
+
+
+@pytest.fixture()
+def crowdsource_jsonl_data(crowdsource_jsonl_path):
+    return load_data_from_jsonl(crowdsource_jsonl_path)
+
+
+def test_crowdsource_eval_on_jsonl(crowdsource_jsonl_data):
+    assert evaluate(set_intersection, crowdsource_jsonl_data, answers_dict=crowdsource_answers) == {'q0': 1/4, 'q1': 1}

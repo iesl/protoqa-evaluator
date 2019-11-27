@@ -12,11 +12,17 @@ except:
     CROWDSOURCE_CONVERSION = False
 
 
+def default_string_preprocessing(pred_answer: str, length_limit: int = 50) -> str:
+    return pred_answer.lower()[:length_limit]
+
+
 def load_data_from_jsonl(data_path: Union[Path,str]) -> Dict:
     question_data = dict()
     with open(data_path) as data:
         for q in data:
             q_json = json.loads(q)
+            if isinstance(q_json['answers-cleaned'], list):
+                q_json['answers-cleaned'] = {frozenset(ans_cluster['answers']): ans_cluster['count'] for ans_cluster in q_json['answers-cleaned']}
             question_data[q_json['questionid']] = q_json
     return question_data
 
@@ -50,7 +56,12 @@ def load_data_from_excel(data_path: Union[Path, str], next_idx: int = 0) -> Dict
         raise Exception('Was not able to import pandas and xlrd, which is required for conversion.')
 
 
-def default_string_preprocessing(pred_answer: str, length_limit: int = 50) -> str:
-    return pred_answer.lower()[:length_limit]
+def save_question_cluster_data_to_jsonl(data_path: Union[Path, str], q_dict: Dict) -> None:
+    with open(data_path, 'w') as output_file:
+        for q in q_dict.values():
+            q = q.copy()
+            q['answers-cleaned'] = [{'count': count, 'answers': list(answers)} for answers, count in q['answers-cleaned'].items()]
+            json.dump(q, output_file)
+            output_file.write('\n')
 
 
