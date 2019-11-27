@@ -29,13 +29,18 @@ def longest_common_subsequence_score(pred_answer: str, true_answer: str) -> floa
 # Functions which take a list of pred_answers and true_answers,
 # and return a score matrix (pred_answers x true_answers)
 ##########################################################################
-def pred_true_pairwise_scores(pred_answers: List[str], true_answers: Dict[str, int],
-                              answer_score_func: Callable = exact_match) -> np.ndarray:
+def pred_true_pairwise_scores(pred_answers: List[str], true_answers: Union[Dict[str, int], Dict[frozenset, int]],
+                              answer_score_func: Callable = exact_match, answer_score_reduction_func: Callable = max) -> np.ndarray:
     pred_answers = pred_answers.copy()
     true_answers = true_answers.copy()
     score_matrix = np.empty((len(pred_answers), len(true_answers)))
     for (pred_i, pred_a), (true_j, true_a) in product(enumerate(pred_answers), enumerate(true_answers)):
-        score_matrix[pred_i, true_j] = answer_score_func(pred_a, true_a)
+        if isinstance(true_a, frozenset):
+            scores = [answer_score_func(pred_a, true_a_i) for true_a_i in true_a]
+            score = answer_score_reduction_func(scores)
+        else:
+            score = answer_score_func(pred_a, true_a)
+        score_matrix[pred_i, true_j] = score
     return score_matrix
 
 

@@ -30,7 +30,7 @@ from functools import partial
 
 soft_lcsubsequence_set_int = partial(
     general_eval,
-    answer_cluster_scoring_func = longest_common_subsequence_score,
+    answer_score_func = longest_common_subsequence_score,
     assign_cluster_scores = False, # This is what makes it a set, it turns off the cluster counts
 )
 
