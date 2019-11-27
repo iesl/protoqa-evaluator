@@ -3,7 +3,6 @@ from family_feud_evaluator import *
 from family_feud_evaluator.evaluation import *
 from functools import partial
 from pathlib import Path
-import tempfile
 
 import warnings
 with warnings.catch_warnings():
@@ -67,15 +66,16 @@ test_data = (
 
 
 def conv_to_param_dict(test_data):
-     return {k + '][' + e[0]: (eval_methods[k], e[1], e[2], v) for e in test_data for k, v in e[3].items()}
+    return {k + '][' + e[0]: (eval_methods[k], e[1], e[2], v) for e in test_data for k, v in e[3].items()}
 
-testdata_param_dict = conv_to_param_dict(test_data)
+
+test_data_param_dict = conv_to_param_dict(test_data)
 
 
 @pytest.mark.parametrize(
     'eval_method, pred_answers, true_answers, expected',
-    list(testdata_param_dict.values()),
-    ids=list(testdata_param_dict.keys()),
+    list(test_data_param_dict.values()),
+    ids=list(test_data_param_dict.keys()),
 )
 def test_parametrized(eval_method, pred_answers, true_answers, expected):
     assert eval_method(pred_answers, true_answers) == expected
@@ -102,7 +102,7 @@ def test_access_data(question_data):
 
 
 def test_evaluate_single_question(question_data):
-    assert evaluate(family_feud, question_data, answers_dict={'q0':["umbrella", "hat", "towel"]}) == {'q0': 38/99}
+    assert evaluate(family_feud, question_data, answers_dict={'q0': ["umbrella", "hat", "towel"]}) == {'q0': 38/99}
 
 
 @pytest.fixture()
