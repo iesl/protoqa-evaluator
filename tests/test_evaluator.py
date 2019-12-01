@@ -3,6 +3,7 @@ from family_feud_evaluator import *
 from family_feud_evaluator.evaluation import *
 from functools import partial
 from pathlib import Path
+import numpy as np
 
 import warnings
 
@@ -98,7 +99,7 @@ test_data_param_dict = conv_to_param_dict(test_data)
     ids=list(test_data_param_dict.keys()),
 )
 def test_parametrized(eval_method, pred_answers, true_answers, expected):
-    assert eval_method(pred_answers, true_answers) == expected
+    assert eval_method(pred_answers, true_answers)[0] == expected
 
 
 @pytest.fixture()
@@ -122,7 +123,11 @@ def test_access_data(question_data):
 
 
 def test_evaluate_single_question(question_data):
-    assert evaluate(family_feud, question_data, answers_dict={'q0': ["umbrella", "hat", "towel"]}) == {'q0': 38 / 99}
+    assert evaluate(family_feud, question_data, answers_dict={'q0': ["umbrella", "hat", "towel"]}) == {
+           'q0': EvalResult(score=0.3838383838383838,
+                      score_matrix=np.array([[38.,  0.,  0.,  0.,  0.,  0.],[ 0.,  0.,  0.,  0.,  0.,  0.],[ 0.,  0.,  0.,  0.,  0.,  0.]]),
+                      answer_assignment={'umbrella': 'umbrella', 'hat': None, 'towel': None})
+           }
 
 
 @pytest.fixture()
@@ -137,8 +142,8 @@ def answers_5():
 
 
 def test_evaluate_multiple_questions(answers_5, question_data):
-    assert evaluate(set_intersection, question_data, answers_dict=answers_5) == {'q0': 2 / 6, 'q1': 2 / 7, 'q2': 0,
-                                                                                 'q3': 1 / 7, 'q4': 1 / 5}
+    eval_output = evaluate(set_intersection, question_data, answers_dict=answers_5)
+    assert {k:v.score for k,v in eval_output.items()} == {'q0': 2 / 6, 'q1': 2 / 7, 'q2': 0, 'q3': 1 / 7, 'q4': 1 / 5}
 
 
 def test_readme_example(question_data):
@@ -149,7 +154,7 @@ def test_readme_example(question_data):
     )
 
     assert evaluate(soft_lcsubsequence_set_int, question_data,
-                    answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']}) == {'q0': 0.3896103896103896}
+                    answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})['q0'].score == 0.3896103896103896
 
 
 @pytest.fixture()
@@ -271,7 +276,7 @@ crowdsource_param_dict = conv_to_param_dict(crowdsource_test_data)
     ids=list(crowdsource_param_dict.keys()),
 )
 def test_crowdsource_eval(eval_method, pred_answers, true_answers, expected):
-    assert eval_method(pred_answers, true_answers) == expected
+    assert eval_method(pred_answers, true_answers)[0] == expected
 
 
 crowdsource_answers = {
@@ -279,9 +284,17 @@ crowdsource_answers = {
     'q1': ['apple', 'broccoli', 'asparagus', 'orange'],
 }
 
+crowdsource_eval_result = {
+    'q0': EvalResult(score=0.25,
+                     score_matrix=np.array([[0., 0., 1., 0.],[0., 0., 0., 0.],[0., 0., 0., 0.]]),
+                     answer_assignment={'star': frozenset({'star', 'sun'}), 'galaxy': None, 'dark matter': None}),
+    'q1': EvalResult(score=1.0,
+                     score_matrix=np.array([[1., 0.],[0., 1.],[0., 0.],[0., 0.]]),
+                     answer_assignment={'apple': frozenset({'banana', 'fruits', 'apple', 'fruit'}), 'broccoli': frozenset({'broccoli', 'vegetable'})})
+}
 
 def test_crowdsource_eval_mult():
-    assert evaluate(set_intersection, q_dict, answers_dict=crowdsource_answers) == {'q0': 1 / 4, 'q1': 1}
+    assert evaluate(set_intersection, q_dict, answers_dict=crowdsource_answers) == crowdsource_eval_result
 
 
 @pytest.fixture()
@@ -302,5 +315,4 @@ def crowdsource_jsonl_data(crowdsource_jsonl_path):
 
 
 def test_crowdsource_eval_on_jsonl(crowdsource_jsonl_data):
-    assert evaluate(set_intersection, crowdsource_jsonl_data, answers_dict=crowdsource_answers) == {'q0': 1 / 4,
-                                                                                                    'q1': 1}
+    assert evaluate(set_intersection, crowdsource_jsonl_data, answers_dict=crowdsource_answers) == crowdsource_eval_result

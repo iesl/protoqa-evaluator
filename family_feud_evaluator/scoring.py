@@ -16,7 +16,7 @@ EN_STOPWORDS = set(stopwords.words('english'))
 def get_optimal_score(score_matrix: np.ndarray) -> float:
     cost_matrix = - score_matrix
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
-    return score_matrix[row_ind, col_ind].sum()
+    return score_matrix[row_ind, col_ind].sum(), row_ind, col_ind
 
 #################################################################
 # Functions which take a single pred_answer and true_answer,
@@ -39,7 +39,7 @@ def longest_common_subsequence_score(pred_answer: str, true_answer: str) -> floa
 
 
 def wn_similarity(pred_answer: str, true_answer: str, remove_stopwords: bool = True, sim_fn: Callable = wn.wup_similarity,
-                  score_reduction_fn: Callable = get_optimal_score) -> float:
+                  score_reduction_fn: Callable = lambda z: get_optimal_score(z)[0]) -> float:
     """
     Computes WN based similarity between two strings. I am using the Wu-Palmer similarity by default, although
     I couldnt find a clear citation where one would work better than the other. This stack exchange answer is the

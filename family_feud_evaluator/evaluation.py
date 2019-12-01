@@ -13,6 +13,15 @@ def evaluate(evaluation_func: Callable, question_data: Dict, answers_dict: Dict[
     return scores
 
 
+class EvalResult(NamedTuple):
+    score: float
+    score_matrix: np.ndarray
+    answer_assignment: dict
+
+    def __eq__(self, other):
+        return self.score == other.score and (self.score_matrix == other.score_matrix).all() and self.answer_assignment == other.answer_assignment
+
+
 def general_eval(pred_answers, true_answers,
                  *,
                  max_pred_answers: Optional[int] = None,
@@ -34,12 +43,16 @@ def general_eval(pred_answers, true_answers,
         score_matrix = score_matrix_transformation(score_matrix)
     if assign_cluster_scores:
         score_matrix *= np.array(list(true_answers.values()))[None]
-    score = get_optimal_score(score_matrix)
+    score, row_ind, col_ind = get_optimal_score(score_matrix)
+    answer_assignment = dict()
+    true_answers_list = list(true_answers.keys())
+    for r, c in zip(row_ind, col_ind):
+        answer_assignment[pred_answers[r]] = true_answers_list[c] if score_matrix[r,c] > 0 else None
     if calc_oracle_score:
         oracle_answers = sorted(list(true_answers.keys()), key=lambda z: true_answers[z], reverse=True)
         if isinstance(oracle_answers[0], frozenset):
             oracle_answers = [ans for (ans, *_) in oracle_answers]
-        oracle_score = general_eval(pred_answers=oracle_answers, true_answers=true_answers,
+        oracle_score, *_ = general_eval(pred_answers=oracle_answers, true_answers=true_answers,
                                     max_pred_answers=max_pred_answers, max_incorrect=max_incorrect,
                                     string_preprocessing=string_preprocessing,
                                     answer_score_func=answer_score_func,
@@ -48,7 +61,7 @@ def general_eval(pred_answers, true_answers,
                                     calc_oracle_score=False,
                                     )
         score /= oracle_score
-    return score
+    return EvalResult(score=score, score_matrix=score_matrix, answer_assignment=answer_assignment)
 
 
 fast_money = partial(general_eval, max_pred_answers=1)
