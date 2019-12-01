@@ -3,10 +3,10 @@ setup(name='family_feud_evaluator',
       version='0.2',
       py_modules=['family_feud_evaluator'],
       install_requires=[
-            'scipy', 'numpy',
+            'scipy', 'numpy', 'nltk',
       ],
       extras_require={
-            'test': ['pytest', 'nltk'],
+            'test': ['pytest'],
             'crowdsource_conversion': ['pandas', 'xlrd'],
       }
       )

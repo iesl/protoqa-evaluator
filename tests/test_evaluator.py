@@ -26,30 +26,31 @@ eval_methods = {
     'family_feud_5_incorrect': partial(family_feud, max_incorrect=5),
     'set_intersection': set_intersection,
     'soft_jaro_winkler_set_intersection': partial(set_intersection, answer_score_func=jaro_winkler_similarity),
-    'hard_jaro_winkler_set_intersection': partial(set_intersection,
+    'hard_jaro_winkler_set_intersection': partial(hard_set_intersection,
                                                   answer_score_func=jaro_winkler_similarity,
-                                                  score_matrix_transformation=lambda z: np.round(z)
                                                   ),
-    'hard_lcsubstring_set_int': partial(set_intersection,
+    'hard_lcsubstring_set_int': partial(hard_set_intersection,
                                         answer_score_func=longest_common_substring_score,
-                                        score_matrix_transformation=lambda z: np.round(z)
                                         ),
-    'hard_lcsubseq_set_int': partial(set_intersection,
+    'hard_lcsubseq_set_int': partial(hard_set_intersection,
                                      answer_score_func=longest_common_subsequence_score,
-                                     score_matrix_transformation=lambda z: np.round(z)
                                      ),
     'hard_lcsubstring': partial(general_eval,
                                 answer_score_func=longest_common_substring_score,
-                                score_matrix_transformation=lambda z: np.round(z)
+                                score_matrix_transformation=np.round,
                                 ),
     'hard_lcsubseq': partial(general_eval,
                              answer_score_func=longest_common_subsequence_score,
-                             score_matrix_transformation=lambda z: np.round(z)
+                             score_matrix_transformation=np.round,
                              ),
-    'fast_money_wn_sim': partial(fast_money, answer_score_func=wn_similarity,
-                                 score_matrix_transformation=lambda z: np.round(z)),
-    'family_feud_wn_sim': partial(family_feud, answer_score_func=wn_similarity,
-                                     score_matrix_transformation=lambda z: np.round(z))
+    'fast_money_wn_sim': partial(fast_money,
+                                 answer_score_func=wn_similarity,
+                                 score_matrix_transformation=np.round,
+                                 ),
+    'family_feud_wn_sim': partial(family_feud,
+                                  answer_score_func=wn_similarity,
+                                  score_matrix_transformation=np.round,
+                                  ),
 }
 
 answer_set_10_60_30 = {"10": 10, "60": 60, "30": 30}
@@ -124,10 +125,10 @@ def test_access_data(question_data):
 
 def test_evaluate_single_question(question_data):
     assert evaluate(family_feud, question_data, answers_dict={'q0': ["umbrella", "hat", "towel"]}) == {
-           'q0': EvalResult(score=0.3838383838383838,
-                      score_matrix=np.array([[38.,  0.,  0.,  0.,  0.,  0.],[ 0.,  0.,  0.,  0.,  0.,  0.],[ 0.,  0.,  0.,  0.,  0.,  0.]]),
-                      answer_assignment={'umbrella': 'umbrella', 'hat': None, 'towel': None})
-           }
+        'q0': EvalResult(score=0.3838383838383838,
+            score_matrix=np.array([[38.,  0.,  0.,  0.,  0.,  0.],[ 0.,  0.,  0.,  0.,  0.,  0.],[ 0.,  0.,  0.,  0.,  0.,  0.]]),
+            answer_assignment={'umbrella': 'umbrella', 'hat': None, 'towel': None})
+        }
 
 
 @pytest.fixture()
@@ -153,8 +154,16 @@ def test_readme_example(question_data):
         assign_cluster_scores=False,  # This is what makes it a set, it turns off the cluster counts
     )
 
-    assert evaluate(soft_lcsubsequence_set_int, question_data,
-                    answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})['q0'].score == 0.3896103896103896
+    eval_output = evaluate(soft_lcsubsequence_set_int, question_data,
+                           answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
+    correct_output = {'q0': EvalResult(score=0.3896103896103896,
+                                       score_matrix=np.array([[1., 0.33333333, 0.25, 0.3, 0.125, 0.125],
+                                                              [0.125, 0., 0.42857143, 0.1, 0., 0.4],
+                                                              [0.27272727, 0.45454545, 0.45454545, 0.90909091, 0.09090909, 0.27272727]]),
+                                       answer_assignment={'umbrella': 'umbrella', 'hat': 'sun hat', 'sun glasses': 'sunglasses'})}
+    assert eval_output['q0'].score == correct_output['q0'].score
+    assert eval_output['q0'].answer_assignment == correct_output['q0'].answer_assignment
+    assert np.isclose(eval_output['q0'].score_matrix, correct_output['q0'].score_matrix).all()
 
 
 @pytest.fixture()

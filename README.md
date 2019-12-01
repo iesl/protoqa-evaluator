@@ -36,14 +36,24 @@ soft_lcsubsequence_set_int = partial(
 
 evaluate(soft_lcsubsequence_set_int, question_data,
          answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
-# Returns: {'q0': 0.3896103896103896}
+```
+This will return a dict of `EvalResult` objects, as follows:
+```
+{
+'q0': EvalResult(
+    score=0.3896103896103896,
+    score_matrix=np.array([[1., 0.33333333, 0.25, 0.3, 0.125, 0.125],
+                           [0.125, 0., 0.42857143, 0.1, 0., 0.4],
+                           [0.27272727, 0.45454545, 0.45454545, 0.90909091, 0.09090909, 0.27272727]]),
+    answer_assignment={'umbrella': 'umbrella', 'hat': 'sun hat', 'sun glasses': 'sunglasses'})
+}
 ```
 
 For each question, the score which is returned is the percentage out of the maximum which could have been received, ie. percentage of oracle score. (This is calculated automatically, regardless of evaluation method, by passing the actual answers back into the function.) In situations with partial scoring for answers, it is possible for a single answer to score positively with more than one cluster (eg. "sun hat" would get a positive score with "hat" and "sun glasses"). In these scenarios the evaluation always makes the optimal assignment of answers to clusters using the Munkres assignment algorithm.
 
 
 ### Testing
-The package has tests written with `pytest`, and one of the tests also requires `nltk` (as it uses the Jaro-Winkler string similarity function). If you already have these dependencies installed you can skip this step, but in order to install test dependencies you can run
+The package has tests written with `pytest`. To install test dependencies you can run
 ```bash
 pip install -e family_feud_evaluator[test]
 ```
