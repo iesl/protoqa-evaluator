@@ -72,18 +72,28 @@ def wn_similarity(pred_answer: str, true_answer: str, remove_stopwords: bool = T
 
         return np.max(sim_mat)
 
+    # if exact match, then return 1. This check is to take care of situations where
+    # a wordnet synset is not present of the word.
+    if exact_match(pred_answer, true_answer) == 1.0:
+        return 1.0
     pred_ans_tokens = word_tokenize(pred_answer)
     true_answer_tokens = word_tokenize(true_answer)
     # remove stop words if necessary
     if remove_stopwords:
         pred_ans_tokens = [tok for tok in pred_ans_tokens if tok not in EN_STOPWORDS]
         true_answer_tokens = [tok for tok in true_answer_tokens if tok not in EN_STOPWORDS]
+
     score_mat = np.empty((len(pred_ans_tokens), len(true_answer_tokens)))
 
     for i, pred_tok in enumerate(pred_ans_tokens):
         for j, true_tok in enumerate(true_answer_tokens):
             score_mat[i, j] = _wn_sim(pred_tok, true_tok)
-    return score_reduction_fn(score_mat)
+
+    score_token_wise_match = score_reduction_fn(score_mat) / len(pred_ans_tokens)
+    # now match the whole strings and see if there is a similarity
+    score_full_match = _wn_sim("_".join(pred_ans_tokens), "_".join(true_answer_tokens))
+    score = max(score_token_wise_match, score_full_match)
+    return score
 
 
 ##########################################################################

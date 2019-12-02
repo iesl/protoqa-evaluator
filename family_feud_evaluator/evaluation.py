@@ -61,7 +61,6 @@ def general_eval(pred_answers, true_answers,
                                     assign_cluster_scores=assign_cluster_scores,
                                     calc_oracle_score=False,
                                     )
-        print("score: {}, oracle score: {}".format(score, oracle_score))
         score /= oracle_score
     return EvalResult(score=score, score_matrix=score_matrix, answer_assignment=answer_assignment)
 
