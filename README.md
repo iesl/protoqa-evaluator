@@ -60,20 +60,25 @@ Setting the `score_func = wordnet_score` will allow evaluation using WordNet Syn
 
 You might prefer to use a different score between synsets, for example Wu-Palmer similarity (see [this StackExchange post](https://linguistics.stackexchange.com/questions/9084/what-do-wordnetsimilarity-scores-mean)). Due to the many processing steps, the actual WordNet synset score function is actually rather "deep in the stack", so overriding it requires overriding it at three levels. (In addition, the `wup_similarity` function can sometimes return `None`, so we need to wrap the function itself.)
 ```python
+# This is needed to ensure the outputs are always floats.
 def wup_similarity_wrapper(*args, **kwargs):
     sim = wn.wup_similarity(*args, **kwargs)
     if sim is None:
         sim = 0.0
     return sim
 
+# We now need to override the default wordnet evaluation functions.
+# There are three:
 
+# 1. A function which compares synsets
 wordnet_wup_synset_score = partial(wordnet_synsets_score, score_func=wup_similarity_wrapper)
+# 2. A function which compares partitions (lists of contiguous tokens) of strings
 wordnet_wup_partition_score = partial(wordnet_partition_score,
                                       score_func=lambda a, b: max(wordnet_wup_synset_score(a, b),
-                                                                  exact_match(a, b)),
+                                                                  exact_match(a, b)), # Fallback if not in WordNet
                                       )
+# 3. A function which compares the surface-form strings
 wordnet_wup_score = partial(wordnet_score, score_func=wordnet_wup_partition_score)
-wordnet_wup_score.__name__ = 'wordnet_wup_score'
 ```
 You can now pass `wordnet_wup_score` as the `score_func` to an evaluation method if you would like. (Note: there is no need for you to repeat the steps above, as it is already included in `family_feud_evaluator.scoring`. It is included here for demonstration purposes.)
 
