@@ -22,6 +22,7 @@ from family_feud_evaluator.evaluation import fast_money
 evaluate(fast_money, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
 # Returns {'q0': 1.0}
 ```
+### Creating a Custom Evaluation Method
 It is easy to create your own evaluation method using the `general_eval`. For example, let's make a set intersection evaluation which simply tells us what percentage of the true answer clusters we got right, and let's also use `longest_common_subsequence_score`  as our answer scoring function so that 'sun glasses' gets counted in the 'sunglasses' cluster:
 ```python
 from family_feud_evaluator.evaluation import general_eval
@@ -30,7 +31,7 @@ from functools import partial
 
 soft_lcsubsequence_set_int = partial(
     general_eval,
-    answer_score_func = longest_common_subsequence_score,
+    score_func = longest_common_subsequence_score,
     assign_cluster_scores = False, # This is what makes it a set, it turns off the cluster counts
 )
 
@@ -51,6 +52,30 @@ This will return a dict of `EvalResult` objects, as follows:
 
 For each question, the score which is returned is the percentage out of the maximum which could have been received, ie. percentage of oracle score. (This is calculated automatically, regardless of evaluation method, by passing the actual answers back into the function.) In situations with partial scoring for answers, it is possible for a single answer to score positively with more than one cluster (eg. "sun hat" would get a positive score with "hat" and "sun glasses"). In these scenarios the evaluation always makes the optimal assignment of answers to clusters using the Munkres assignment algorithm.
 
+### WordNet Evaluation
+Setting the `score_func = wordnet_score` will allow evaluation using WordNet Synsets. By default this function will
+1. Tokenize the answer and true strings, removing stop words.
+2. Compare (contiguous groups of) tokens to see if they are in the same synset or are an exact string match.
+3. Return a score based on the optimal matching of tokens.
+
+You might prefer to use a different score between synsets, for example Wu-Palmer similarity (see [this StackExchange post](https://linguistics.stackexchange.com/questions/9084/what-do-wordnetsimilarity-scores-mean)). Due to the many processing steps, the actual WordNet synset score function is actually rather "deep in the stack", so overriding it requires overriding it at three levels. (In addition, the `wup_similarity` function can sometimes return `None`, so we need to wrap the function itself.)
+```
+def wup_similarity_wrapper(*args, **kwargs):
+    sim = wn.wup_similarity(*args, **kwargs)
+    if sim is None:
+        sim = 0.0
+    return sim
+
+
+wordnet_wup_synset_score = partial(wordnet_synsets_score, score_func=wup_similarity_wrapper)
+wordnet_wup_partition_score = partial(wordnet_partition_score,
+                                      score_func=lambda a, b: max(wordnet_wup_synset_score(a, b),
+                                                                  exact_match(a, b)),
+                                      )
+wordnet_wup_score = partial(wordnet_score, score_func=wordnet_wup_partition_score)
+wordnet_wup_score.__name__ = 'wordnet_wup_score'
+```
+You can now pass `wordnet_wup_score` as the `score_func` to an evaluation method if you would like. (Note: there is no need for you to repeat the steps above, as it is already included in `family_feud_evaluator.scoring`. It is included here for demonstration purposes.)
 
 ### Testing
 The package has tests written with `pytest`. To install test dependencies you can run

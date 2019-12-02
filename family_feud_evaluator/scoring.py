@@ -6,17 +6,46 @@ from typing import *
 from nltk import word_tokenize
 from nltk.corpus import wordnet as wn
 from nltk.corpus import stopwords
+from more_itertools import partitions
+import warnings
+from functools import partial
 
 EN_STOPWORDS = set(stopwords.words('english'))
+
+def all_pairs_scores(a: Union[str, Iterable], b: Union[str, Iterable],
+                     score_func: Callable, reduction_func: Callable = lambda z: z,
+                     preprocess_func: Callable = lambda z: [z] if isinstance(z, str) else z) -> Union[np.ndarray, float]:
+    """
+    Generic function for pairwise comparisons. Takes strings or iterables a and b and
+    a score function and returns the matrix of all pairwise scores between a and b.
+
+    :param a: Typically a string or iterable of strings to compare with b.
+    :param b: Typically a string or iterable of strings to compare with a.
+    :param score_func: Function which accepts two arguments (a,b) and returns their score in [0,1]
+    :param reduction_func: Function which accepts a matrix and (typically) returns a scalar
+    :param preprocess_func: Function which is run on both a and b prior to anything else
+    :return: Matrix of pairwise scores or output of reduction function on this matrix
+    """
+    a, b = preprocess_func(a), preprocess_func(b)
+    if len(a) == 0 or len(b) == 0:
+        return 0.0
+    score_matrix = np.zeros((len(a), len(b)))
+    for (a_idx, a_val), (b_idx, b_val) in product(enumerate(a), enumerate(b)):
+        score_val = score_func(a_val, b_val)
+        score_matrix[a_idx, b_idx] = score_val
+        if not (0 <= score_val <= 1):
+            warnings.warn(f'Score function did not return a value in [0,1]: score_func({a_val}, {b_val}) = {score_val} with type {type(score_val)}')
+    return reduction_func(score_matrix)
 
 
 ##########################################################################
 # Functions which take in a score matrix and return the actual score
 ##########################################################################
-def get_optimal_score(score_matrix: np.ndarray) -> float:
+def get_optimal_score(score_matrix: np.ndarray) -> Tuple[float, List[int], List[int]]:
     cost_matrix = - score_matrix
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
     return score_matrix[row_ind, col_ind].sum(), row_ind, col_ind
+
 
 #################################################################
 # Functions which take a single pred_answer and true_answer,
@@ -37,83 +66,68 @@ def longest_common_subsequence_score(pred_answer: str, true_answer: str) -> floa
     lcsubseq_size = sum([block.size for block in sm.get_matching_blocks()])
     return lcsubseq_size / max(len(pred_answer), len(true_answer))
 
-
-def wn_similarity(pred_answer: str, true_answer: str, remove_stopwords: bool = True, sim_fn: Callable = wn.wup_similarity,
-                  score_reduction_fn: Callable = lambda z: get_optimal_score(z)[0]) -> float:
-    """
-    Computes WN based similarity between two strings. I am using the Wu-Palmer similarity by default, although
-    I couldnt find a clear citation where one would work better than the other. This stack exchange answer is the
-    best resource -- https://linguistics.stackexchange.com/questions/9084/what-do-wordnetsimilarity-scores-mean
-
-    :param pred_answer:
-    :param true_answer:
-    :param remove_stopwords:
-    :param sim_fn:
-    :param score_reduction_fn:
-    :return:
-    """
-    def _wn_sim(tok1: str, tok2: str, sim_fn: Callable = sim_fn) -> float:
-        """
-        calculates the max similairty between two tokens using the similarity function by checking with all their synsets
-        :param tok1:
-        :param tok2:
-        :return:
-        """
-        tok1_synsets = wn.synsets(tok1)
-        tok2_synsets = wn.synsets(tok2)
-        if len(tok1_synsets) == 0 or len(tok2_synsets) == 0:
-            return -1.0
-        sim_mat = np.ones((len(tok1_synsets), len(tok2_synsets)), dtype="float32") * -1.0
-        for i, syn_t1 in enumerate(tok1_synsets):
-            for j, syn_t2 in enumerate(tok2_synsets):
-                sim = sim_fn(syn_t1, syn_t2)
-                if sim is not None:
-                    sim_mat[i, j] = sim
-
-        return np.max(sim_mat)
-
-    # if exact match, then return 1. This check is to take care of situations where
-    # a wordnet synset is not present of the word.
-    if exact_match(pred_answer, true_answer) == 1.0:
-        return 1.0
-    pred_ans_tokens = word_tokenize(pred_answer)
-    true_answer_tokens = word_tokenize(true_answer)
-    # remove stop words if necessary
-    if remove_stopwords:
-        pred_ans_tokens = [tok for tok in pred_ans_tokens if tok not in EN_STOPWORDS]
-        true_answer_tokens = [tok for tok in true_answer_tokens if tok not in EN_STOPWORDS]
-
-    score_mat = np.empty((len(pred_ans_tokens), len(true_answer_tokens)))
-
-    for i, pred_tok in enumerate(pred_ans_tokens):
-        for j, true_tok in enumerate(true_answer_tokens):
-            score_mat[i, j] = _wn_sim(pred_tok, true_tok)
-
-    score_token_wise_match = score_reduction_fn(score_mat) / len(pred_ans_tokens)
-    # now match the whole strings and see if there is a similarity
-    score_full_match = _wn_sim("_".join(pred_ans_tokens), "_".join(true_answer_tokens))
-    score = max(score_token_wise_match, score_full_match)
-    return score
+wordnet_synsets_score = partial(
+    all_pairs_scores,
+    score_func = lambda a, b: 1.0 if a == b else 0.0,
+    reduction_func = np.max,
+    preprocess_func = lambda z: wn.synsets(z.replace(' ', '_'))
+)
+wordnet_synsets_score.__name__ = 'wordnet_synsets_score'
+wordnet_synsets_score.__docs__ = 'Takes in a pair of strings which each get mapped to corresponding synsets, then returns the max similarity score between over any pairing of these synsets.'
 
 
 ##########################################################################
-# Functions which take a list of pred_answers and true_answers,
-# and return a score matrix (pred_answers x true_answers)
+# Functions which take an iterable of pred_answers and true_answers,
+# calculate a score matrix of the pairwise combinations, and return a float
 ##########################################################################
-def pred_true_pairwise_scores(pred_answers: List[str], true_answers: Union[Dict[str, int], Dict[frozenset, int]],
-                              answer_score_func: Callable = exact_match,
-                              answer_score_reduction_func: Callable = max) -> np.ndarray:
-    pred_answers = pred_answers.copy()
-    true_answers = true_answers.copy()
-    score_matrix = np.empty((len(pred_answers), len(true_answers)))
-    for (pred_i, pred_a), (true_j, true_a) in product(enumerate(pred_answers), enumerate(true_answers)):
-        if isinstance(true_a, frozenset):
-            scores = [answer_score_func(pred_a, true_a_i) for true_a_i in true_a]
-            score = answer_score_reduction_func(scores)
-        else:
-            score = answer_score_func(pred_a, true_a)
-        score_matrix[pred_i, true_j] = score
-    return score_matrix
+wordnet_partition_score = partial(
+    all_pairs_scores,
+    score_func = lambda a,b: max(wordnet_synsets_score(a,b), exact_match(a,b)),
+    reduction_func = lambda z: get_optimal_score(z)[0] / max(z.shape),
+)
+wordnet_partition_score.__name__ = 'wordnet_partition_score'
+wordnet_partition_score.__docs__ = 'Takes in a pair of partitions (List[str]) and computes the optimal matching between the parts of these partitions based on WordNet synsets or exact string match.'
+
+
+def wordnet_score(pred_answer: str, true_answer: str, score_func: Callable= wordnet_partition_score,
+                  reduction_func: Callable = np.max, *, stopwords = EN_STOPWORDS):
+    """
+    WordNet score function for a predicted answer string and a true answer string.
+    Takes in strings, tokenizes them, and returns the score which corresponds to the optimal
+    partition of the original strings.
+    """
+    def _preprocess(z, stopwords = stopwords):
+        tokens = [tok for tok in word_tokenize(z) if tok not in stopwords]
+        parts = [[' '.join(tokens) for tokens in part] for part in partitions(tokens)]
+        return parts
+    return all_pairs_scores(pred_answer, true_answer, score_func, reduction_func, _preprocess)
+
+
+# Wu-Palmer Similarity (https://linguistics.stackexchange.com/questions/9084/what-do-wordnetsimilarity-scores-mean)
+def wup_similarity_wrapper(*args, **kwargs):
+    sim = wn.wup_similarity(*args, **kwargs)
+    if sim is None:
+        sim = 0.0
+    return sim
+
+
+wordnet_wup_synset_score = partial(wordnet_synsets_score, score_func=wup_similarity_wrapper)
+wordnet_wup_partition_score = partial(wordnet_partition_score,
+                                      score_func=lambda a, b: max(wordnet_wup_synset_score(a, b),
+                                                                  exact_match(a, b)),
+                                      )
+wordnet_wup_score = partial(wordnet_score, score_func=wordnet_wup_partition_score)
+wordnet_wup_score.__name__ = 'wordnet_wup_score'
+
+
+def cluster_score(pred_answers: List[str],
+                  true_answers: Union[Dict[str, int], Dict[frozenset, int]],
+                  score_func: Callable = exact_match,
+                  cluster_reduction_func: Callable = np.max) -> np.ndarray:
+        true_ans, *_ = true_answers.keys()
+        if isinstance(true_ans, frozenset):
+            score_func = partial(all_pairs_scores, score_func=score_func, reduction_func = cluster_reduction_func)
+        return all_pairs_scores(pred_answers, true_answers, score_func)
 
 
 ##########################################################################
