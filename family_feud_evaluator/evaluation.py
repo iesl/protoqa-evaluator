@@ -57,7 +57,7 @@ def general_eval(pred_answers, true_answers,
                                     string_preprocessing=string_preprocessing,
                                     answer_score_func=answer_score_func,
                                     answer_score_reduction_func=answer_score_reduction_func,
-                                    score_matrix_transformation = None,
+                                    score_matrix_transformation=score_matrix_transformation,
                                     assign_cluster_scores=assign_cluster_scores,
                                     calc_oracle_score=False,
                                     )
