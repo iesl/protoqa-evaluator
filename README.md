@@ -39,7 +39,7 @@ evaluate(soft_lcsubsequence_set_int, question_data,
          answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
 ```
 This will return a dict of `EvalResult` objects, as follows:
-```
+```python
 {
 'q0': EvalResult(
     score=0.3896103896103896,
@@ -59,7 +59,7 @@ Setting the `score_func = wordnet_score` will allow evaluation using WordNet Syn
 3. Return a score based on the optimal matching of tokens.
 
 You might prefer to use a different score between synsets, for example Wu-Palmer similarity (see [this StackExchange post](https://linguistics.stackexchange.com/questions/9084/what-do-wordnetsimilarity-scores-mean)). Due to the many processing steps, the actual WordNet synset score function is actually rather "deep in the stack", so overriding it requires overriding it at three levels. (In addition, the `wup_similarity` function can sometimes return `None`, so we need to wrap the function itself.)
-```
+```python
 def wup_similarity_wrapper(*args, **kwargs):
     sim = wn.wup_similarity(*args, **kwargs)
     if sim is None:
