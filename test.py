@@ -41,6 +41,7 @@ def print_scores(eval_result:Dict[str, EvalResult]) -> None:
     for qid in eval_result.keys():
         try:
             print("qid: {}, score: {}".format(qid, eval_result[qid].score))
+            print(eval_result[qid].answer_assignment)
         except KeyError:
             continue
 
