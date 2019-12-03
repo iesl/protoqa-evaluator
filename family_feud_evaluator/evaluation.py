@@ -37,10 +37,10 @@ def general_eval(pred_answers, true_answers,
         pred_answers = pred_answers[:max_pred_answers]
     pred_answers = [string_preprocessing(pred_answer) for pred_answer in pred_answers]
     score_matrix = cluster_score(pred_answers, true_answers, score_func = score_func, cluster_reduction_func = cluster_reduction_func)
-    if max_incorrect is not None:
-        score_matrix = limit_total_wrong(score_matrix, max_incorrect)
     if score_matrix_transformation is not None:
         score_matrix = score_matrix_transformation(score_matrix)
+    if max_incorrect is not None:
+        score_matrix = limit_total_wrong(score_matrix, max_incorrect)
     if assign_cluster_scores:
         score_matrix *= np.array(list(true_answers.values()))[None]
     score, row_ind, col_ind = get_optimal_score(score_matrix)
