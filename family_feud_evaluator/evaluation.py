@@ -69,6 +69,10 @@ fast_money = partial(general_eval, max_pred_answers=1)
 
 family_feud = partial(general_eval, max_incorrect=3)
 
+family_feud_2_incorrect = partial(general_eval, max_incorrect=2)
+
+family_feud_5_incorrect = partial(general_eval, max_incorrect=5)
+
 set_intersection = partial(general_eval, assign_cluster_scores=False)
 
 hard_set_intersection = partial(set_intersection, score_matrix_transformation=np.round)

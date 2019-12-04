@@ -64,4 +64,26 @@ def save_question_cluster_data_to_jsonl(data_path: Union[Path, str], q_dict: Dic
             json.dump(q, output_file)
             output_file.write('\n')
 
+def save_question_cluster_data_to_input_jsonl(data_path: Union[Path, str], q_dict: Dict) -> None:
+    with open(data_path, 'w') as output_file:
+        for q in q_dict.values():
+            q_new = {}
+            q_new["questionid"] = q["questionid"]
+            q_new["question"] = q["question"]
+            q_new["predicted_answers"] = []
+            json.dump(q_new, output_file)
+            output_file.write('\n')
+
+def load_predictions(data_path: Union[Path, str]) -> Dict:
+    ans_dict = dict()
+    fin = open(data_path)
+    for line in fin:
+        line = json.loads(line.strip())
+        qid = line["question_id"]
+        ans = line["predicted_answer"]
+        ans_dict[qid] = ans
+    fin.close()
+    return ans_dict
+
+
 
