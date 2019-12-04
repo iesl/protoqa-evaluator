@@ -56,8 +56,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Collect subgraphs around entities")
-    parser.add_argument("--prediction_file", type=str)
-    parser.add_argument("--ground_truth_annotation_file", type=str)
+    parser.add_argument("--prediction_file", type=str, required=True)
+    parser.add_argument("--ground_truth_annotation_file", type=str, required=True)
     args = parser.parse_args()
     main(args)
 
