@@ -36,10 +36,10 @@ def load_data_from_excel(data_path: Union[Path, str], next_idx: int = 0) -> Dict
         question_data = dict()
         for sheet_idx, (sheet_name, sheet) in enumerate(sheets.items()):
             q_dict = dict()
-            q_dict['raw-original-answers'] = Counter(sheet['answer'].dropna())
-            q_dict['raw-answers-cleaned'] = Counter(sheet['fixed_spelling'].dropna())
+            q_dict['raw-original-answers'] = Counter(sheet['answer'].dropna().astype(str))
+            q_dict['raw-answers-cleaned'] = Counter(sheet['fixed_spelling'].dropna().astype(str))
             clusters = sheet.loc[sheet['fixed_spelling'].notna() & (sheet['Combined'] != '?'), ['fixed_spelling', 'Combined']] \
-                .groupby('Combined')['fixed_spelling'].agg(count=len, frozenset=frozenset)
+                .astype(str).groupby('Combined')['fixed_spelling'].agg(count=len, frozenset=frozenset)
             q_dict['answers-cleaned'] = {row['frozenset']: row['count'] for _, row in clusters.iterrows()}
             questionid = f'q{next_idx + sheet_idx}'
             question_data[questionid] = {
@@ -63,5 +63,27 @@ def save_question_cluster_data_to_jsonl(data_path: Union[Path, str], q_dict: Dic
             q['answers-cleaned'] = [{'count': count, 'answers': list(answers)} for answers, count in q['answers-cleaned'].items()]
             json.dump(q, output_file)
             output_file.write('\n')
+
+def save_question_cluster_data_to_input_jsonl(data_path: Union[Path, str], q_dict: Dict) -> None:
+    with open(data_path, 'w') as output_file:
+        for q in q_dict.values():
+            q_new = {}
+            q_new["questionid"] = q["questionid"]
+            q_new["question"] = q["question"]
+            q_new["predicted_answers"] = []
+            json.dump(q_new, output_file)
+            output_file.write('\n')
+
+def load_predictions(data_path: Union[Path, str]) -> Dict:
+    ans_dict = dict()
+    fin = open(data_path)
+    for line in fin:
+        line = json.loads(line.strip())
+        qid = line["question_id"]
+        ans = line["predicted_answer"]
+        ans_dict[qid] = ans
+    fin.close()
+    return ans_dict
+
 
 

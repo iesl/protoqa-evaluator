@@ -25,30 +25,30 @@ eval_methods = {
     'family_feud_2_incorrect': partial(family_feud, max_incorrect=2),
     'family_feud_5_incorrect': partial(family_feud, max_incorrect=5),
     'set_intersection': set_intersection,
-    'soft_jaro_winkler_set_intersection': partial(set_intersection, answer_score_func=jaro_winkler_similarity),
+    'soft_jaro_winkler_set_intersection': partial(set_intersection, score_func=jaro_winkler_similarity),
     'hard_jaro_winkler_set_intersection': partial(hard_set_intersection,
-                                                  answer_score_func=jaro_winkler_similarity,
+                                                  score_func=jaro_winkler_similarity,
                                                   ),
     'hard_lcsubstring_set_int': partial(hard_set_intersection,
-                                        answer_score_func=longest_common_substring_score,
+                                        score_func=longest_common_substring_score,
                                         ),
     'hard_lcsubseq_set_int': partial(hard_set_intersection,
-                                     answer_score_func=longest_common_subsequence_score,
+                                     score_func=longest_common_subsequence_score,
                                      ),
     'hard_lcsubstring': partial(general_eval,
-                                answer_score_func=longest_common_substring_score,
+                                score_func=longest_common_substring_score,
                                 score_matrix_transformation=np.round,
                                 ),
     'hard_lcsubseq': partial(general_eval,
-                             answer_score_func=longest_common_subsequence_score,
+                             score_func=longest_common_subsequence_score,
                              score_matrix_transformation=np.round,
                              ),
     'fast_money_wn_sim': partial(fast_money,
-                                 answer_score_func=wn_similarity,
+                                 score_func=wordnet_score,
                                  score_matrix_transformation=np.round,
                                  ),
     'family_feud_wn_sim': partial(family_feud,
-                                  answer_score_func=wn_similarity,
+                                  score_func=wordnet_score,
                                   score_matrix_transformation=np.round,
                                   ),
 }
@@ -83,7 +83,7 @@ test_data = (
      {'family_feud': 0.0, 'set_intersection': 0.0, 'hard_jaro_winkler_set_intersection': 2 / 3,
       'hard_lcsubstring_set_int': 1 / 3, 'hard_lcsubseq_set_int': 2 / 3}),
     ('non_exact_match_answers', ['odor', 'looks'], answer_set_looks_smell,
-         {'family_feud': 0.0, 'set_intersection': 0.0, 'hard_lcsubstring_set_int': 0, 'hard_lcsubseq_set_int': 0, 'fast_money_wn_sim': 1.0, 'family_feud_wn_sim': 1.0})
+         {'family_feud': 0.0, 'set_intersection': 0.0, 'hard_lcsubstring_set_int': 0, 'hard_lcsubseq_set_int': 0, 'fast_money_wn_sim': 0.4, 'family_feud_wn_sim': 1.0})
 )
 
 
@@ -150,7 +150,7 @@ def test_evaluate_multiple_questions(answers_5, question_data):
 def test_readme_example(question_data):
     soft_lcsubsequence_set_int = partial(
         general_eval,
-        answer_score_func=longest_common_subsequence_score,
+        score_func=longest_common_subsequence_score,
         assign_cluster_scores=False,  # This is what makes it a set, it turns off the cluster counts
     )
 
