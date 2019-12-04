@@ -42,7 +42,8 @@ def calc_scores(predictions: Dict[str, List[str]], question_data: Dict) -> float
         all_rows.append(rows)
     header = ["Eval method"]
     for s in SIM_FUNCS:
-        header.append(s[0])
+        for hs in HARD_SOFT:
+            header.append(s[0] + " ({})".format(hs[0]))
     print(tabulate(all_rows, headers=header))
 
 def main(args):
