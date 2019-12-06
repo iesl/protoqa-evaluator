@@ -314,7 +314,7 @@ def crowdsource_jsonl_path():
 
 def test_crowdsource_data_save(tmpdir):
     crowdsource_jsonl_write_path = tmpdir.join('crowdsource_data_stub.jsonl')
-    save_question_cluster_data_to_jsonl(crowdsource_jsonl_write_path, q_dict)
+    save_to_jsonl(crowdsource_jsonl_write_path, q_dict)
     assert load_data_from_jsonl(crowdsource_jsonl_write_path) == q_dict
 
 
