@@ -1,6 +1,6 @@
 from distutils.core import setup
 setup(name='family_feud_evaluator',
-      version='0.3',
+      version='0.4',
       py_modules=['family_feud_evaluator'],
       install_requires=[
             'scipy', 'numpy', 'nltk', 'more-itertools',
