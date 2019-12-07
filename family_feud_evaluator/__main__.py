@@ -22,6 +22,12 @@ def main():
     ranking_data_parser.add_argument('--output_jsonl', type=Path, required=True)
     ranking_data_parser.add_argument('--include_do_not_use')
 
+    ranking_comparison_data_parser = convert_parser_sp.add_parser('ranking_comparison', help='Convert ranking comparison XLSX files to JSONL')
+    ranking_comparison_data_parser.add_argument('xlsx_file', type=Path)
+    # ranking_data_parser.add_argument('--question_jsonl', type=Path, required=True)
+    ranking_comparison_data_parser.add_argument('--output_jsonl', type=Path, required=True)
+    # ranking_data_parser.add_argument('--include_do_not_use')
+
     args = parser.parse_args()
 
     if args.command == 'convert':
@@ -29,6 +35,8 @@ def main():
             convert_clustered(vars(args))
         if args.type == 'ranking':
             convert_ranking(vars(args))
+        if args.type == 'ranking_comparison':
+            convert_ranking_comparison(vars(args))
 
 
 def convert_clustered(config):
@@ -62,6 +70,13 @@ def convert_ranking(config):
         answers_dict = {k:v for k,v in answers_dict.items() if k not in do_not_use}
     return save_to_jsonl(config['output_jsonl'], answers_dict)
 
+
+def convert_ranking_comparison(config):
+    for k in ['xlsx_file', 'output_jsonl']:
+        config[k] = config[k].expanduser()
+
+    ranking_data = load_ranking_comparison_data(config['xlsx_file'])
+    return save_to_jsonl(config['output_jsonl'], ranking_data)
 
 
 if __name__ == '__main__':
