@@ -126,12 +126,6 @@ def load_ranking_data(data_path: Union[Path,str]) -> Dict[str, List[str]]:
     return all_answers
 
 
-def load_ranking_data(data_path: Union[Path,str]) -> Dict[str, List[str]]:
-    sheets, data_hash = _load_excel_sheets(data_path)
-    all_answers = dict()
-    
-
-
 def convert_ranking_data_to_answers(ranking_data: Dict[str,List[str]], question_data: Dict) -> Dict[str, Dict[str,Union[str,List[str]]]]:
     question_to_ids = {v['question']:k for k,v in question_data.items()}
 
