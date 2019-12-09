@@ -82,6 +82,19 @@ wordnet_wup_score = partial(wordnet_score, score_func=wordnet_wup_partition_scor
 ```
 You can now pass `wordnet_wup_score` as the `score_func` to an evaluation method if you would like. (Note: there is no need for you to repeat the steps above, as it is already included in `family_feud_evaluator.scoring`. It is included here for demonstration purposes.)
 
+### BERT Model
+This uses the huggingface implementation of the transformer. If you don't have this installed, you can do so by running
+```bash
+pip install transformers
+```
+
+The BERT model works by converting the answers to vector representations before passing them to the evaluation functions. We have to specify this preprocessing step as follows:
+```python
+from family_feud_evaluator.bert_scoring import TransformerScoringModel, hard_bert_eval, 
+bert_scoring_model = TransformerScoringModel() # this sets up the model and loads the weights
+evaluate(hard_bert_eval, question_data, answers_dict={'q0': ['age','demeanor','social status']}, bert_scoring_model.preprocessing)
+```
+
 ### Testing
 The package has tests written with `pytest`. To install test dependencies you can run
 ```bash

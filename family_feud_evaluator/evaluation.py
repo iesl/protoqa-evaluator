@@ -4,10 +4,13 @@ from functools import partial
 from typing import *
 
 
-def evaluate(evaluation_func: Callable, question_data: Dict, answers_dict: Dict[str, List[str]]) -> Dict[str, float]:
+def evaluate(evaluation_func: Callable, question_data: Dict, answers_dict: Dict[str, List[str]],
+             data_preprocessing: Optional[Callable] = None) -> Dict[str, float]:
     scores = dict()
     for qid, pred_answers in answers_dict.items():
         true_q = question_data[qid]
+        if data_preprocessing is not None:
+            true_q, pred_answers = data_preprocessing(true_q, answers_dict)
         true_answers = true_q['answers-cleaned'].copy()
         scores[qid] = evaluation_func(pred_answers, true_answers)
     return scores
@@ -28,6 +31,7 @@ def general_eval(pred_answers, true_answers,
                  max_incorrect: Optional[int] = None,
                  string_preprocessing: Callable = default_string_preprocessing,
                  score_func: Callable = exact_match,
+                 cluster_score_func: Callable = cluster_score,
                  cluster_reduction_func: Callable = np.max,
                  score_matrix_transformation: Optional[Callable] = None,
                  assign_cluster_scores: bool = True,
@@ -36,7 +40,7 @@ def general_eval(pred_answers, true_answers,
     if max_pred_answers is not None:
         pred_answers = pred_answers[:max_pred_answers]
     pred_answers = [string_preprocessing(pred_answer) for pred_answer in pred_answers]
-    score_matrix = cluster_score(pred_answers, true_answers, score_func = score_func, cluster_reduction_func = cluster_reduction_func)
+    score_matrix = cluster_score_func(pred_answers, true_answers, score_func = score_func, cluster_reduction_func = cluster_reduction_func)
     if score_matrix_transformation is not None:
         score_matrix = score_matrix_transformation(score_matrix)
     if max_incorrect is not None:
@@ -56,6 +60,7 @@ def general_eval(pred_answers, true_answers,
                                     max_pred_answers=max_pred_answers, max_incorrect=max_incorrect,
                                     string_preprocessing=string_preprocessing,
                                     score_func=score_func,
+                                    cluster_score_func=cluster_score_func,
                                     cluster_reduction_func=cluster_reduction_func,
                                     score_matrix_transformation=score_matrix_transformation,
                                     assign_cluster_scores=assign_cluster_scores,

@@ -24,6 +24,7 @@ def all_pairs_scores(a: Union[str, Iterable], b: Union[str, Iterable],
     :param score_func: Function which accepts two arguments (a,b) and returns their score in [0,1]
     :param reduction_func: Function which accepts a matrix and (typically) returns a scalar
     :param preprocess_func: Function which is run on both a and b prior to anything else
+    :param kwargs: passed on to the score_func
     :return: Matrix of pairwise scores or output of reduction function on this matrix
     """
     a, b = preprocess_func(a), preprocess_func(b)

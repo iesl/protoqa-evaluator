@@ -14,10 +14,18 @@ with warnings.catch_warnings():
 try:
     import pandas
     import xlrd
-
     CROWDSOURCE_CONVERSION_TESTS = True
 except ImportError:
     CROWDSOURCE_CONVERSION_TESTS = False
+
+try:
+    import torch
+    from family_feud_evaluator.bert_scoring import TransformerScoringModel, hard_bert_eval
+    BERT_EVAL = True
+except ImportError:
+    BERT_EVAL = False
+
+
 
 eval_methods = {
     'family_feud': family_feud,
@@ -325,3 +333,27 @@ def crowdsource_jsonl_data(crowdsource_jsonl_path):
 
 def test_crowdsource_eval_on_jsonl(crowdsource_jsonl_data):
     assert evaluate(set_intersection, crowdsource_jsonl_data, answers_dict=crowdsource_answers) == crowdsource_eval_result
+
+
+@pytest.fixture()
+def bert_scoring_model():
+    return TransformerScoringModel()
+
+@pytest.fixture()
+def bert_preprocessing_output(bert_scoring_model):
+    return bert_scoring_model.preprocessing(q_dict['q0'], crowdsource_answers['q0'])
+
+def test_bert_preprocessing_q(bert_preprocessing_output):
+    q_out, _ = bert_preprocessing_output
+    assert len(q_out['answers-cleaned']) == len(q_out['answers-cleaned-orig'])
+    for x in q_out['answers-cleaned']:
+        assert isinstance(x, frozenset)
+        y, *_ = x
+        assert isinstance(y, torch.Tensor)
+
+
+def test_bert_preprocessing_answers(bert_preprocessing_output):
+    _, ans_out = bert_preprocessing_output
+    assert len(ans_out) == len(crowdsource_answers['q0'])
+    for x in ans_out:
+        assert isinstance(x, torch.Tensor)
