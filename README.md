@@ -90,7 +90,7 @@ pip install transformers
 
 The BERT model works by converting the answers to vector representations before passing them to the evaluation functions. We have to specify this preprocessing step as follows:
 ```python
-from family_feud_evaluator.bert_scoring import TransformerScoringModel, hard_bert_eval, 
+from family_feud_evaluator.bert_scoring import TransformerScoringModel, hard_bert_eval 
 bert_scoring_model = TransformerScoringModel() # this sets up the model and loads the weights
 evaluate(hard_bert_eval, question_data, answers_dict={'q0': ['age','demeanor','social status']}, bert_scoring_model.preprocessing)
 ```
