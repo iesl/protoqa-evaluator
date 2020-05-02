@@ -125,7 +125,7 @@ def cluster_score(pred_answers: List[str],
                   true_answers: Union[Dict[str, int], Dict[frozenset, int]],
                   score_func: Callable = exact_match,
                   cluster_reduction_func: Callable = np.max) -> np.ndarray:
-        true_ans, *_ = true_answers.keys()
+        true_ans, *_ = true_answers
         if isinstance(true_ans, frozenset):
             score_func = partial(all_pairs_scores, score_func=score_func, reduction_func = cluster_reduction_func)
         return all_pairs_scores(pred_answers, true_answers, score_func)
