@@ -36,7 +36,7 @@ def general_eval(pred_answers, true_answers,
                  score_matrix_transformation: Optional[Callable] = None,
                  assign_cluster_scores: bool = True,
                  calc_oracle_score: bool = True,
-                 ) -> float:
+                 ) -> EvalResult:
     if max_pred_answers is not None:
         pred_answers = pred_answers[:max_pred_answers]
     pred_answers = [string_preprocessing(pred_answer) for pred_answer in pred_answers]
