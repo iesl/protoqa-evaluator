@@ -1,6 +1,18 @@
-from family_feud_evaluator.evaluation import evaluate, family_feud, fast_money, EvalResult, set_intersection, hard_set_intersection, family_feud_5_incorrect
-from family_feud_evaluator.scoring import longest_common_subsequence_score, longest_common_substring_score, \
-    wordnet_score, exact_match
+from family_feud_evaluator.evaluation import (
+    evaluate,
+    family_feud,
+    fast_money,
+    EvalResult,
+    set_intersection,
+    hard_set_intersection,
+    family_feud_5_incorrect,
+)
+from family_feud_evaluator.scoring import (
+    longest_common_subsequence_score,
+    longest_common_substring_score,
+    wordnet_score,
+    exact_match,
+)
 from functools import partial
 from family_feud_evaluator.data_processing import load_data_from_jsonl, load_predictions
 from collections import defaultdict
@@ -14,12 +26,23 @@ import numpy as np
 
 family_feud_wn_sim = partial(family_feud, score_func=wordnet_score)
 fast_money_wn_sim = partial(fast_money, score_func=wordnet_score)
-fast_money_substring_sim = partial(fast_money, score_func=longest_common_substring_score)
+fast_money_substring_sim = partial(
+    fast_money, score_func=longest_common_substring_score
+)
 
-EVAL_METHODS = [("Fast Money", fast_money), ("Family Feud", family_feud), ("Set Intersection", set_intersection), ("Family Feud (5 incorrect)", family_feud_5_incorrect)]
-SIM_FUNCS = [("Exact Match", exact_match), ("Longest Substr", longest_common_substring_score), ("Longest Subseq", longest_common_subsequence_score), ("WordNet", wordnet_score)]
+EVAL_METHODS = [
+    ("Fast Money", fast_money),
+    ("Family Feud", family_feud),
+    ("Set Intersection", set_intersection),
+    ("Family Feud (5 incorrect)", family_feud_5_incorrect),
+]
+SIM_FUNCS = [
+    ("Exact Match", exact_match),
+    ("Longest Substr", longest_common_substring_score),
+    ("Longest Subseq", longest_common_subsequence_score),
+    ("WordNet", wordnet_score),
+]
 HARD_SOFT = [("Hard", np.round), ("Soft", None)]
-
 
 
 def calc_scores(predictions: Dict[str, List[str]], question_data: Dict) -> float:
@@ -32,8 +55,14 @@ def calc_scores(predictions: Dict[str, List[str]], question_data: Dict) -> float
                 print("Eval method: {}".format(eval_method[0]))
                 print("Similarity Function: {}".format(sim_func[0]))
                 print("Hard/Soft: {}".format(hs[0]))
-                method = partial(eval_method[1], score_func=sim_func[1], score_matrix_transformation=hs[1])
-                scores = evaluate(method, question_data=question_data, answers_dict=predictions)
+                method = partial(
+                    eval_method[1],
+                    score_func=sim_func[1],
+                    score_matrix_transformation=hs[1],
+                )
+                scores = evaluate(
+                    method, question_data=question_data, answers_dict=predictions
+                )
                 avg_score = np.mean([s.score for _, s in scores.items()])
                 # for _, s in scores.items():
                 #     print(s.answer_assignment)
@@ -46,6 +75,7 @@ def calc_scores(predictions: Dict[str, List[str]], question_data: Dict) -> float
             header.append(s[0] + " ({})".format(hs[0]))
     print(tabulate(all_rows, headers=header))
 
+
 def main(args):
 
     question_data = load_data_from_jsonl(args.ground_truth_annotation_file)
@@ -53,11 +83,9 @@ def main(args):
     calc_scores(predictions, question_data)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Collect subgraphs around entities")
     parser.add_argument("--prediction_file", type=str, required=True)
     parser.add_argument("--ground_truth_annotation_file", type=str, required=True)
     args = parser.parse_args()
     main(args)
-

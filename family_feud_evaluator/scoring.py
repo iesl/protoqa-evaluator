@@ -10,11 +10,16 @@ from more_itertools import partitions
 import warnings
 from functools import partial
 
-EN_STOPWORDS = set(stopwords.words('english'))
+EN_STOPWORDS = set(stopwords.words("english"))
 
-def all_pairs_scores(a: Union[str, Iterable], b: Union[str, Iterable],
-                     score_func: Callable, reduction_func: Callable = lambda z: z,
-                     preprocess_func: Callable = lambda z: [z] if isinstance(z, str) else z) -> Union[np.ndarray, float]:
+
+def all_pairs_scores(
+    a: Union[str, Iterable],
+    b: Union[str, Iterable],
+    score_func: Callable,
+    reduction_func: Callable = lambda z: z,
+    preprocess_func: Callable = lambda z: [z] if isinstance(z, str) else z,
+) -> Union[np.ndarray, float]:
     """
     Generic function for pairwise comparisons. Takes strings or iterables a and b and
     a score function and returns the matrix of all pairwise scores between a and b.
@@ -35,7 +40,9 @@ def all_pairs_scores(a: Union[str, Iterable], b: Union[str, Iterable],
         score_val = score_func(a_val, b_val)
         score_matrix[a_idx, b_idx] = score_val
         if not (0 <= score_val <= 1):
-            warnings.warn(f'Score function did not return a value in [0,1]: score_func({a_val}, {b_val}) = {score_val} with type {type(score_val)}')
+            warnings.warn(
+                f"Score function did not return a value in [0,1]: score_func({a_val}, {b_val}) = {score_val} with type {type(score_val)}"
+            )
     return reduction_func(score_matrix)
 
 
@@ -43,7 +50,7 @@ def all_pairs_scores(a: Union[str, Iterable], b: Union[str, Iterable],
 # Functions which take in a score matrix and return the actual score
 ##########################################################################
 def get_optimal_score(score_matrix: np.ndarray) -> Tuple[float, List[int], List[int]]:
-    cost_matrix = - score_matrix
+    cost_matrix = -score_matrix
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
     return score_matrix[row_ind, col_ind].sum(), row_ind, col_ind
 
@@ -67,14 +74,15 @@ def longest_common_subsequence_score(pred_answer: str, true_answer: str) -> floa
     lcsubseq_size = sum([block.size for block in sm.get_matching_blocks()])
     return lcsubseq_size / max(len(pred_answer), len(true_answer))
 
+
 wordnet_synsets_score = partial(
     all_pairs_scores,
-    score_func = lambda a, b: 1.0 if a == b else 0.0,
-    reduction_func = np.max,
-    preprocess_func = lambda z: wn.synsets(z.replace(' ', '_'))
+    score_func=lambda a, b: 1.0 if a == b else 0.0,
+    reduction_func=np.max,
+    preprocess_func=lambda z: wn.synsets(z.replace(" ", "_")),
 )
-wordnet_synsets_score.__name__ = 'wordnet_synsets_score'
-wordnet_synsets_score.__docs__ = 'Takes in a pair of strings which each get mapped to corresponding synsets, then returns the max similarity score between over any pairing of these synsets.'
+wordnet_synsets_score.__name__ = "wordnet_synsets_score"
+wordnet_synsets_score.__docs__ = "Takes in a pair of strings which each get mapped to corresponding synsets, then returns the max similarity score between over any pairing of these synsets."
 
 
 ##########################################################################
@@ -83,25 +91,35 @@ wordnet_synsets_score.__docs__ = 'Takes in a pair of strings which each get mapp
 ##########################################################################
 wordnet_partition_score = partial(
     all_pairs_scores,
-    score_func = lambda a,b: max(wordnet_synsets_score(a,b), exact_match(a,b)),
-    reduction_func = lambda z: get_optimal_score(z)[0] / max(z.shape),
+    score_func=lambda a, b: max(wordnet_synsets_score(a, b), exact_match(a, b)),
+    reduction_func=lambda z: get_optimal_score(z)[0] / max(z.shape),
 )
-wordnet_partition_score.__name__ = 'wordnet_partition_score'
-wordnet_partition_score.__docs__ = 'Takes in a pair of partitions (List[str]) and computes the optimal matching between the parts of these partitions based on WordNet synsets or exact string match.'
+wordnet_partition_score.__name__ = "wordnet_partition_score"
+wordnet_partition_score.__docs__ = "Takes in a pair of partitions (List[str]) and computes the optimal matching between the parts of these partitions based on WordNet synsets or exact string match."
 
 
-def wordnet_score(pred_answer: str, true_answer: str, score_func: Callable= wordnet_partition_score,
-                  reduction_func: Callable = np.max, *, stopwords = EN_STOPWORDS):
+def wordnet_score(
+    pred_answer: str,
+    true_answer: str,
+    score_func: Callable = wordnet_partition_score,
+    reduction_func: Callable = np.max,
+    *,
+    stopwords=EN_STOPWORDS,
+):
     """
     WordNet score function for a predicted answer string and a true answer string.
     Takes in strings, tokenizes them, and returns the score which corresponds to the optimal
     partition of the original strings.
     """
-    def _preprocess(z, stopwords = stopwords):
+
+    def _preprocess(z, stopwords=stopwords):
         tokens = [tok for tok in word_tokenize(z) if tok not in stopwords]
-        parts = [[' '.join(tokens) for tokens in part] for part in partitions(tokens)]
+        parts = [[" ".join(tokens) for tokens in part] for part in partitions(tokens)]
         return parts
-    return all_pairs_scores(pred_answer, true_answer, score_func, reduction_func, _preprocess)
+
+    return all_pairs_scores(
+        pred_answer, true_answer, score_func, reduction_func, _preprocess
+    )
 
 
 # Wu-Palmer Similarity (https://linguistics.stackexchange.com/questions/9084/what-do-wordnetsimilarity-scores-mean)
@@ -112,31 +130,40 @@ def wup_similarity_wrapper(*args, **kwargs):
     return sim
 
 
-wordnet_wup_synset_score = partial(wordnet_synsets_score, score_func=wup_similarity_wrapper)
-wordnet_wup_partition_score = partial(wordnet_partition_score,
-                                      score_func=lambda a, b: max(wordnet_wup_synset_score(a, b),
-                                                                  exact_match(a, b)),
-                                      )
+wordnet_wup_synset_score = partial(
+    wordnet_synsets_score, score_func=wup_similarity_wrapper
+)
+wordnet_wup_partition_score = partial(
+    wordnet_partition_score,
+    score_func=lambda a, b: max(wordnet_wup_synset_score(a, b), exact_match(a, b)),
+)
 wordnet_wup_score = partial(wordnet_score, score_func=wordnet_wup_partition_score)
-wordnet_wup_score.__name__ = 'wordnet_wup_score'
+wordnet_wup_score.__name__ = "wordnet_wup_score"
 
 
-def cluster_score(pred_answers: List[str],
-                  true_answers: Union[Dict[str, int], Dict[frozenset, int]],
-                  score_func: Callable = exact_match,
-                  cluster_reduction_func: Callable = np.max) -> np.ndarray:
-        true_ans, *_ = true_answers
-        if isinstance(true_ans, frozenset):
-            score_func = partial(all_pairs_scores, score_func=score_func, reduction_func = cluster_reduction_func)
-        return all_pairs_scores(pred_answers, true_answers, score_func)
+def cluster_score(
+    pred_answers: List[str],
+    true_answers: Union[Dict[str, int], Dict[frozenset, int]],
+    score_func: Callable = exact_match,
+    cluster_reduction_func: Callable = np.max,
+) -> np.ndarray:
+    true_ans, *_ = true_answers
+    if isinstance(true_ans, frozenset):
+        score_func = partial(
+            all_pairs_scores,
+            score_func=score_func,
+            reduction_func=cluster_reduction_func,
+        )
+    return all_pairs_scores(pred_answers, true_answers, score_func)
 
 
 ##########################################################################
 # Functions which take in a score matrix and return an augmented
 # score matrix
 ##########################################################################
-def scale_score_matrix_by_cluster_scores(score_matrix: np.ndarray,
-                                         cluster_scores: List[int]) -> np.ndarray:
+def scale_score_matrix_by_cluster_scores(
+    score_matrix: np.ndarray, cluster_scores: List[int]
+) -> np.ndarray:
     return score_matrix * np.array(cluster_scores)[None]
 
 
@@ -147,5 +174,5 @@ def limit_total_wrong(score_matrix: np.ndarray, k: int) -> np.ndarray:
         if a == 0:
             incorrect += 1
             if incorrect >= k:
-                return score_matrix[:i + 1]
+                return score_matrix[: i + 1]
     return score_matrix
