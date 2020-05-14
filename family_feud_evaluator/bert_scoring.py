@@ -2,16 +2,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import argparse
 import logging
-
+import numpy as np
 import torch
 import torch.nn.functional as F
-import numpy as np
-from typing import *
 from copy import deepcopy
 from functools import partial
-from .evaluation import general_eval
-from .scoring import all_pairs_scores
-
+from scipy.spatial.distance import cosine
 from transformers import (
     GPT2Config,
     OpenAIGPTConfig,
@@ -20,7 +16,6 @@ from transformers import (
     XLMConfig,
     CTRLConfig,
 )
-
 from transformers import (
     WEIGHTS_NAME,
     BertConfig,
@@ -30,7 +25,10 @@ from transformers import (
     RobertaTokenizer,
     BertModel,
 )
-from scipy.spatial.distance import cosine
+from typing import *
+
+from .evaluation import general_eval
+from .scoring import all_pairs_scores
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",

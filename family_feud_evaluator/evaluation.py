@@ -1,7 +1,8 @@
-from .scoring import *
-from .data_processing import default_string_preprocessing
 from functools import partial
 from typing import *
+
+from .data_processing import default_string_preprocessing
+from .scoring import *
 
 
 def evaluate(

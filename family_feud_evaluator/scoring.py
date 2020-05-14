@@ -1,14 +1,14 @@
 import numpy as np
-from scipy.optimize import linear_sum_assignment
-from difflib import SequenceMatcher
-from itertools import product
-from typing import *
-from nltk import word_tokenize
-from nltk.corpus import wordnet as wn
-from nltk.corpus import stopwords
-from more_itertools import partitions
 import warnings
+from difflib import SequenceMatcher
 from functools import partial
+from itertools import product
+from more_itertools import partitions
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+from nltk.corpus import wordnet as wn
+from scipy.optimize import linear_sum_assignment
+from typing import *
 
 EN_STOPWORDS = set(stopwords.words("english"))
 
