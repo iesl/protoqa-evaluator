@@ -1,6 +1,5 @@
 import sys
-from pathlib import Path
-from typing import *
+
 
 # From recipe http://code.activestate.com/recipes/577058/
 def query_yes_no(question, default="yes"):

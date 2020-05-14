@@ -1,8 +1,6 @@
 import pytest
-from typing import *
+
 from family_feud_evaluator.scoring import *
-from nltk.corpus import wordnet as wn
-from functools import partial
 
 
 class AnswerScoreExample(NamedTuple):

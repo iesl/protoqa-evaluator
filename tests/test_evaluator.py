@@ -1,11 +1,12 @@
-import pytest
-from family_feud_evaluator import *
-from family_feud_evaluator.evaluation import *
+import warnings
 from functools import partial
 from pathlib import Path
-import numpy as np
 
-import warnings
+import numpy as np
+import pytest
+
+from family_feud_evaluator import *
+from family_feud_evaluator.evaluation import *
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)

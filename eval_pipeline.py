@@ -1,10 +1,16 @@
+import argparse
+from functools import partial
+from typing import *
+
+import numpy as np
+from tabulate import tabulate
+
+from family_feud_evaluator.data_processing import load_data_from_jsonl, load_predictions
 from family_feud_evaluator.evaluation import (
     evaluate,
     family_feud,
     fast_money,
-    EvalResult,
     set_intersection,
-    hard_set_intersection,
     family_feud_5_incorrect,
 )
 from family_feud_evaluator.scoring import (
@@ -13,16 +19,6 @@ from family_feud_evaluator.scoring import (
     wordnet_score,
     exact_match,
 )
-from functools import partial
-from family_feud_evaluator.data_processing import load_data_from_jsonl, load_predictions
-from collections import defaultdict
-from typing import *
-import json
-import argparse
-import numpy as np
-from tabulate import tabulate
-import numpy as np
-
 
 family_feud_wn_sim = partial(family_feud, score_func=wordnet_score)
 fast_money_wn_sim = partial(fast_money, score_func=wordnet_score)

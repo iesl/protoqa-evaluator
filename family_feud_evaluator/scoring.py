@@ -1,14 +1,15 @@
-import numpy as np
 import warnings
 from difflib import SequenceMatcher
 from functools import partial
 from itertools import product
+from typing import *
+
+import numpy as np
 from more_itertools import partitions
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet as wn
 from scipy.optimize import linear_sum_assignment
-from typing import *
 
 EN_STOPWORDS = set(stopwords.words("english"))
 
@@ -41,7 +42,8 @@ def all_pairs_scores(
         score_matrix[a_idx, b_idx] = score_val
         if not (0 <= score_val <= 1):
             warnings.warn(
-                f"Score function did not return a value in [0,1]: score_func({a_val}, {b_val}) = {score_val} with type {type(score_val)}"
+                f"Score function did not return a value in [0,1]: "
+                f"score_func({a_val}, {b_val}) = {score_val} with type {type(score_val)}"
             )
     return reduction_func(score_matrix)
 
@@ -82,7 +84,8 @@ wordnet_synsets_score = partial(
     preprocess_func=lambda z: wn.synsets(z.replace(" ", "_")),
 )
 wordnet_synsets_score.__name__ = "wordnet_synsets_score"
-wordnet_synsets_score.__docs__ = "Takes in a pair of strings which each get mapped to corresponding synsets, then returns the max similarity score between over any pairing of these synsets."
+wordnet_synsets_score.__docs__ = "Takes in a pair of strings which each get mapped to corresponding synsets, " \
+                                 "then returns the max similarity score between over any pairing of these synsets."
 
 
 ##########################################################################
@@ -95,7 +98,9 @@ wordnet_partition_score = partial(
     reduction_func=lambda z: get_optimal_score(z)[0] / max(z.shape),
 )
 wordnet_partition_score.__name__ = "wordnet_partition_score"
-wordnet_partition_score.__docs__ = "Takes in a pair of partitions (List[str]) and computes the optimal matching between the parts of these partitions based on WordNet synsets or exact string match."
+wordnet_partition_score.__docs__ = \
+    "Takes in a pair of partitions (List[str]) and computes the optimal matching between " \
+    "the parts of these partitions based on WordNet synsets or exact string match."
 
 
 def wordnet_score(

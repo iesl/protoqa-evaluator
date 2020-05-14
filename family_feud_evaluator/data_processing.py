@@ -1,6 +1,5 @@
 import hashlib
 import json
-import jsonlines
 import warnings
 from collections import Counter
 from pathlib import Path

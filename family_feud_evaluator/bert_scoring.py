@@ -2,12 +2,21 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import argparse
 import logging
+from copy import deepcopy
+from functools import partial
+from typing import *
+
 import numpy as np
 import torch
 import torch.nn.functional as F
-from copy import deepcopy
-from functools import partial
-from scipy.spatial.distance import cosine
+from transformers import (
+    BertConfig,
+    BertTokenizer,
+    RobertaConfig,
+    RobertaModel,
+    RobertaTokenizer,
+    BertModel,
+)
 from transformers import (
     GPT2Config,
     OpenAIGPTConfig,
@@ -16,16 +25,6 @@ from transformers import (
     XLMConfig,
     CTRLConfig,
 )
-from transformers import (
-    WEIGHTS_NAME,
-    BertConfig,
-    BertTokenizer,
-    RobertaConfig,
-    RobertaModel,
-    RobertaTokenizer,
-    BertModel,
-)
-from typing import *
 
 from .evaluation import general_eval
 from .scoring import all_pairs_scores
