@@ -12,7 +12,7 @@ try:
     import xlrd
 
     ABLE_TO_LOAD_EXCEL = True
-except:
+except ModuleNotFoundError:
     ABLE_TO_LOAD_EXCEL = False
 
 

@@ -11,7 +11,7 @@ from nltk.corpus import stopwords
 from nltk.corpus import wordnet as wn
 from scipy.optimize import linear_sum_assignment
 
-EN_STOPWORDS = set(stopwords.words("english"))
+EN_STOPWORDS = frozenset(stopwords.words("english"))
 
 
 def all_pairs_scores(
