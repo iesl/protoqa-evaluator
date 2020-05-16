@@ -15,6 +15,18 @@ try:
 except ModuleNotFoundError:
     ABLE_TO_LOAD_EXCEL = False
 
+__all__ = [
+    "ABLE_TO_LOAD_EXCEL",
+    "default_string_preprocessing",
+    "load_data_from_excel",
+    "load_data_from_jsonl",
+    "save_to_jsonl",
+    "save_question_cluster_data_to_input_jsonl",
+    "load_predictions",
+    "load_ranking_data",
+    "convert_ranking_data_to_answers",
+]
+
 
 def default_string_preprocessing(pred_answer: str, length_limit: int = 50) -> str:
     return pred_answer.lower()[:length_limit].strip()
@@ -23,6 +35,11 @@ def default_string_preprocessing(pred_answer: str, length_limit: int = 50) -> st
 def _load_excel_sheets(
     data_path: Union[Path, str]
 ) -> Tuple[Dict[str, pd.DataFrame], str]:
+    """
+    Loads excel data with multiple sheets.
+    :param data_path:  Path to excel file.
+    :return: Sheets, which is a Dict of sheet names to pandas DataFrames, and a hash of the data
+    """
     if not ABLE_TO_LOAD_EXCEL:
         raise Exception(
             "Was not able to import pandas and xlrd, which is required for conversion."
@@ -36,6 +53,11 @@ def _load_excel_sheets(
 
 
 def load_data_from_jsonl(data_path: Union[Path, str]) -> Dict:
+    """
+    Load jsonl input data, converting the answers-cleaned item to use frozenset keys.
+    :param data_path: path to jsonl data
+    :return: question_id indexed Dict
+    """
     question_data = dict()
     with open(data_path) as data:
         for q in data:
@@ -50,6 +72,12 @@ def load_data_from_jsonl(data_path: Union[Path, str]) -> Dict:
 
 
 def load_data_from_excel(data_path: Union[Path, str], round: int = 1) -> Dict:
+    """
+    Loads data from the clustering excel files.
+    :param data_path: Path to the excel file.
+    :param round: Clustering round, only used for creating the question id
+    :return: Dict with question_id to all data for this question.
+    """
     sheets, data_hash = _load_excel_sheets(data_path)
     question_data = dict()
     for sheet_idx, (sheet_name, sheet) in enumerate(sheets.items()):
@@ -111,6 +139,9 @@ def load_data_from_excel(data_path: Union[Path, str], round: int = 1) -> Dict:
 
 
 def save_to_jsonl(data_path: Union[Path, str], qa_dict: Dict) -> None:
+    """
+    Saves answer data from the load_data_from_excel format, which uses frozensets for answer keys, into a jsonl format.
+    """
     with open(data_path, "w") as output_file:
         for qa in qa_dict.values():
             qa = qa.copy()
@@ -126,6 +157,9 @@ def save_to_jsonl(data_path: Union[Path, str], qa_dict: Dict) -> None:
 def save_question_cluster_data_to_input_jsonl(
     data_path: Union[Path, str], q_dict: Dict
 ) -> None:
+    """
+    Creates a stub file which contains the questionid, question, and an empty placeholder list for predicted_answers
+    """
     with open(data_path, "w") as output_file:
         for q in q_dict.values():
             q_new = {}
@@ -137,11 +171,15 @@ def save_question_cluster_data_to_input_jsonl(
 
 
 def load_predictions(data_path: Union[Path, str]) -> Dict:
+    """
+    Loads jsonl into a simplified dictionary structure which only maps qids to lists of answers.
+    Requires the jsonl to have question_id and predicted_answer fields
+    """
     ans_dict = dict()
     fin = open(data_path)
     for line in fin:
         line = json.loads(line.strip())
-        qid = line["question_id"]
+        qid = line["questionid"]
         ans = line["predicted_answer"]
         ans_dict[qid] = ans
     fin.close()
@@ -149,6 +187,11 @@ def load_predictions(data_path: Union[Path, str]) -> Dict:
 
 
 def load_ranking_data(data_path: Union[Path, str]) -> Dict[str, List[str]]:
+    """
+    Load in the ranking data from the human ranking evaluation task.
+    :param data_path:
+    :return:
+    """
     sheets, data_hash = _load_excel_sheets(data_path)
     all_answers = dict()
     for sheet_idx, (sheet_name, sheet) in enumerate(sheets.items()):
