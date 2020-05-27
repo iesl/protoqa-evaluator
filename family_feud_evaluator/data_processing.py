@@ -175,16 +175,19 @@ def load_predictions(data_path: Union[Path, str]) -> Dict:
     Loads jsonl into a simplified dictionary structure which only maps qids to lists of answers.
     Requires the jsonl to have question_id and predicted_answer fields
     """
-    ans_dict = dict()
-    fin = open(data_path)
-    for line in fin:
-        line = json.loads(line.strip())
-        qid = line["questionid"]
-        ans = line["predicted_answer"]
-        ans_dict[qid] = ans
-    fin.close()
-    return ans_dict
 
+    if str(data_path).endswith("jsonl"):
+        ans_dict = dict()
+        fin = open(data_path)
+        for line in fin:
+            line = json.loads(line.strip())
+            qid = line["questionid"]
+            ans = line["predicted_answer"]
+            ans_dict[qid] = ans
+        fin.close()
+        return ans_dict
+    else:
+        return json.load(open(data_path))
 
 def load_ranking_data(data_path: Union[Path, str]) -> Dict[str, List[str]]:
     """
