@@ -319,7 +319,7 @@ def test_num_questions_crowdsource_data(crowdsource_excel_data):
 
 
 q_dict = {
-    "q0": {
+    "r1q1": {
         "question": "Name something you’d find in outer space.",
         "normalized-question": "name something you’d find in outer space.",
         "raw-original-answers": {
@@ -374,10 +374,10 @@ q_dict = {
             frozenset(["comet", "meteor", "asteroid"]): 3,
         },
         "source": "crowdsource_data_stub.xlsx",
-        "questionid": "q0",
+        "questionid": "r1q1",
         "sourceid": "1",
     },
-    "q1": {
+    "r1q2": {
         "question": "Name a type of produce.",
         "normalized-question": "name a type of produce.",
         "raw-original-answers": {
@@ -406,7 +406,7 @@ q_dict = {
             frozenset(["broccoli", "vegetable"]): 3,
         },
         "source": "crowdsource_data_stub.xlsx",
-        "questionid": "q1",
+        "questionid": "r1q2",
         "sourceid": "2",
     },
 }
@@ -425,7 +425,7 @@ crowdsource_test_data = (
     (
         "exact_match",
         ["fruit", "vegetable"],
-        q_dict["q1"]["answers-cleaned"],
+        q_dict["r1q2"]["answers-cleaned"],
         {
             "family_feud": 1.0,
             "fast_money": 1.0,
@@ -439,7 +439,7 @@ crowdsource_test_data = (
     (
         "misspelling",
         ["aaple", "brocoli"],
-        q_dict["q1"]["answers-cleaned"],
+        q_dict["r1q2"]["answers-cleaned"],
         {
             "family_feud": 0.0,
             "fast_money": 0.0,
@@ -453,13 +453,13 @@ crowdsource_test_data = (
     (
         "single_element_category",
         ["moon"],
-        q_dict["q0"]["answers-cleaned"],
+        q_dict["r1q1"]["answers-cleaned"],
         {"family_feud": 1 / 8, "fast_money": 1 / 3, "set_intersection": 1 / 4},
     ),
     (
         "no_category_label_points",
         ["space rock"],
-        q_dict["q0"]["answers-cleaned"],
+        q_dict["r1q1"]["answers-cleaned"],
         {
             "family_feud": 0.0,
             "fast_money": 0.0,
@@ -471,7 +471,7 @@ crowdsource_test_data = (
     (
         "multiple_possible_assignments",
         ["broccoli/banana", "an apple"],
-        q_dict["q1"]["answers-cleaned"],
+        q_dict["r1q2"]["answers-cleaned"],
         {
             "family_feud": 0.0,
             "fast_money": 0.0,
@@ -483,7 +483,7 @@ crowdsource_test_data = (
     (
         "no_double_points_for_surface_forms",
         ["apple", "banana", "fruit", "fruits"],
-        q_dict["q1"]["answers-cleaned"],
+        q_dict["r1q2"]["answers-cleaned"],
         {
             "family_feud": 5 / 8,
             "fast_money": 1.0,
@@ -495,7 +495,7 @@ crowdsource_test_data = (
     (
         "no_double_points_for_partial_matches",
         ["apple", "aapple", "appple", "apples"],
-        q_dict["q1"]["answers-cleaned"],
+        q_dict["r1q2"]["answers-cleaned"],
         {
             "family_feud": 5 / 8,
             "fast_money": 1.0,
@@ -507,7 +507,7 @@ crowdsource_test_data = (
     (
         "no_match",
         ["a", "b", "c", "d", "e"],
-        q_dict["q0"]["answers-cleaned"],
+        q_dict["r1q1"]["answers-cleaned"],
         {
             "family_feud": 0,
             "fast_money": 0,
@@ -531,12 +531,12 @@ def test_crowdsource_eval(eval_method, pred_answers, true_answers, expected):
 
 
 crowdsource_answers = {
-    "q0": ["star", "galaxy", "dark matter"],
-    "q1": ["apple", "broccoli", "asparagus", "orange"],
+    "r1q1": ["star", "galaxy", "dark matter"],
+    "r1q2": ["apple", "broccoli", "asparagus", "orange"],
 }
 
 crowdsource_eval_result = {
-    "q0": EvalResult(
+    "r1q1": EvalResult(
         score=0.25,
         score_matrix=np.array(
             [[0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]]
@@ -547,7 +547,7 @@ crowdsource_eval_result = {
             "dark matter": None,
         },
     ),
-    "q1": EvalResult(
+    "r1q2": EvalResult(
         score=1.0,
         score_matrix=np.array([[1.0, 0.0], [0.0, 1.0], [0.0, 0.0], [0.0, 0.0]]),
         answer_assignment={
