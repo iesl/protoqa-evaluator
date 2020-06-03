@@ -589,29 +589,3 @@ def test_crowdsource_eval_on_jsonl(crowdsource_jsonl_data):
         )
         == crowdsource_eval_result
     )
-
-
-@pytest.fixture()
-def bert_scoring_model():
-    return TransformerScoringModel()
-
-
-@pytest.fixture()
-def bert_preprocessing_output(bert_scoring_model):
-    return bert_scoring_model.preprocessing(q_dict["q0"], crowdsource_answers["q0"])
-
-
-def test_bert_preprocessing_q(bert_preprocessing_output):
-    q_out, _ = bert_preprocessing_output
-    assert len(q_out["answers-cleaned"]) == len(q_out["answers-cleaned-orig"])
-    for x in q_out["answers-cleaned"]:
-        assert isinstance(x, frozenset)
-        y, *_ = x
-        assert isinstance(y, torch.Tensor)
-
-
-def test_bert_preprocessing_answers(bert_preprocessing_output):
-    _, ans_out = bert_preprocessing_output
-    assert len(ans_out) == len(crowdsource_answers["q0"])
-    for x in ans_out:
-        assert isinstance(x, torch.Tensor)
