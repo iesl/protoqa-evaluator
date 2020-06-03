@@ -9,8 +9,7 @@ def evaluate(
     data_preprocessing: Optional[Callable] = None,
 ) -> Dict[str, float]:
     scores = dict()
-    for qid in question_data.keys():
-        pred_answers = answers_dict[qid]
+    for qid, pred_answers in answers_dict.items():
         true_q = question_data[qid]
         if data_preprocessing is not None:
             true_q, pred_answers = data_preprocessing(true_q, answers_dict)
@@ -113,42 +112,42 @@ hard_set_intersection = partial(set_intersection, score_matrix_transformation=np
 mlm_family_feud = partial(
     general_eval,
     max_incorrect=3,
-    cluster_score_func=cluster_score_considering_whole_cluster,
+    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxpred1 = partial(
     general_eval,
     max_pred_answers=1,
-    cluster_score_func=cluster_score_considering_whole_cluster,
+    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxpred3 = partial(
     general_eval,
     max_pred_answers=3,
-    cluster_score_func=cluster_score_considering_whole_cluster,
+    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxpred5 = partial(
     general_eval,
     max_pred_answers=5,
-    cluster_score_func=cluster_score_considering_whole_cluster,
+    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxpred10 = partial(
     general_eval,
     max_pred_answers=10,
-    cluster_score_func=cluster_score_considering_whole_cluster,
+    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxinc1 = partial(
     general_eval,
     max_pred_answers=1,
-    cluster_score_func=cluster_score_considering_whole_cluster,
+    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxinc3 = partial(
     general_eval,
     max_pred_answers=3,
-    cluster_score_func=cluster_score_considering_whole_cluster,
+    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxinc5 = partial(
     general_eval,
     max_pred_answers=5,
-    cluster_score_func=cluster_score_considering_whole_cluster,
+    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 
 # Direct implementations of some of the simpler algorithms,
