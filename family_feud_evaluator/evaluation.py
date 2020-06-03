@@ -15,7 +15,9 @@ def evaluate(
         if data_preprocessing is not None:
             true_q, pred_answers = data_preprocessing(true_q, answers_dict)
         true_answers = true_q["answers-cleaned"].copy()
-        scores[qid] = evaluation_func(pred_answers, true_answers, question_string=true_q['normalized-question'])
+        scores[qid] = evaluation_func(
+            pred_answers, true_answers, question_string=true_q["normalized-question"]
+        )
     return scores
 
 
@@ -53,7 +55,7 @@ def general_eval(
     score_matrix = cluster_score_func(
         pred_answers,
         true_answers,
-        question_string = question_string,
+        question_string=question_string,
         score_func=score_func,
         cluster_reduction_func=cluster_reduction_func,
     )
@@ -96,26 +98,58 @@ def general_eval(
     )
 
 
-fast_money = partial(general_eval, max_pred_answers=1, calc_oracle_score=True)
+fast_money = partial(general_eval, max_pred_answers=1)
 
-family_feud = partial(general_eval, max_incorrect=3, calc_oracle_score=True)
+family_feud = partial(general_eval, max_incorrect=3)
 
-family_feud_2_incorrect = partial(general_eval, max_incorrect=2, calc_oracle_score=True)
+family_feud_2_incorrect = partial(general_eval, max_incorrect=2)
 
-family_feud_5_incorrect = partial(general_eval, max_incorrect=5, calc_oracle_score=True)
+family_feud_5_incorrect = partial(general_eval, max_incorrect=5)
 
 set_intersection = partial(general_eval, assign_cluster_scores=False)
 
 hard_set_intersection = partial(set_intersection, score_matrix_transformation=np.round)
 
-mlm_family_feud = partial(general_eval, max_incorrect=3, cluster_score_func=cluster_score_considering_whole_cluster)
-maxpred1 = partial(general_eval, max_pred_answers=1, cluster_score_func=cluster_score_considering_whole_cluster)
-maxpred3 = partial(general_eval, max_pred_answers=3, cluster_score_func=cluster_score_considering_whole_cluster)
-maxpred5 = partial(general_eval, max_pred_answers=5, cluster_score_func=cluster_score_considering_whole_cluster)
-maxpred10 = partial(general_eval, max_pred_answers=10, cluster_score_func=cluster_score_considering_whole_cluster)
-maxinc1 = partial(general_eval, max_pred_answers=1, cluster_score_func=cluster_score_considering_whole_cluster)
-maxinc3 = partial(general_eval, max_pred_answers=3, cluster_score_func=cluster_score_considering_whole_cluster)
-maxinc5 = partial(general_eval, max_pred_answers=5, cluster_score_func=cluster_score_considering_whole_cluster)
+mlm_family_feud = partial(
+    general_eval,
+    max_incorrect=3,
+    cluster_score_func=cluster_score_considering_whole_cluster,
+)
+maxpred1 = partial(
+    general_eval,
+    max_pred_answers=1,
+    cluster_score_func=cluster_score_considering_whole_cluster,
+)
+maxpred3 = partial(
+    general_eval,
+    max_pred_answers=3,
+    cluster_score_func=cluster_score_considering_whole_cluster,
+)
+maxpred5 = partial(
+    general_eval,
+    max_pred_answers=5,
+    cluster_score_func=cluster_score_considering_whole_cluster,
+)
+maxpred10 = partial(
+    general_eval,
+    max_pred_answers=10,
+    cluster_score_func=cluster_score_considering_whole_cluster,
+)
+maxinc1 = partial(
+    general_eval,
+    max_pred_answers=1,
+    cluster_score_func=cluster_score_considering_whole_cluster,
+)
+maxinc3 = partial(
+    general_eval,
+    max_pred_answers=3,
+    cluster_score_func=cluster_score_considering_whole_cluster,
+)
+maxinc5 = partial(
+    general_eval,
+    max_pred_answers=5,
+    cluster_score_func=cluster_score_considering_whole_cluster,
+)
 
 # Direct implementations of some of the simpler algorithms,
 # without the functional structure of the general setting.

@@ -189,6 +189,7 @@ def load_predictions(data_path: Union[Path, str]) -> Dict:
     else:
         return json.load(open(data_path))
 
+
 def load_ranking_data(data_path: Union[Path, str]) -> Dict[str, List[str]]:
     """
     Load in the ranking data from the human ranking evaluation task.

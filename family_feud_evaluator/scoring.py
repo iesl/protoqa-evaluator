@@ -88,8 +88,10 @@ wordnet_synsets_score = partial(
     preprocess_func=lambda z: wn.synsets(z.replace(" ", "_")),
 )
 wordnet_synsets_score.__name__ = "wordnet_synsets_score"
-wordnet_synsets_score.__docs__ = "Takes in a pair of strings which each get mapped to corresponding synsets, " \
-                                 "then returns the max similarity score between over any pairing of these synsets."
+wordnet_synsets_score.__docs__ = (
+    "Takes in a pair of strings which each get mapped to corresponding synsets, "
+    "then returns the max similarity score between over any pairing of these synsets."
+)
 
 
 ##########################################################################
@@ -102,9 +104,10 @@ wordnet_partition_score = partial(
     reduction_func=lambda z: get_optimal_score(z)[0] / max(z.shape),
 )
 wordnet_partition_score.__name__ = "wordnet_partition_score"
-wordnet_partition_score.__docs__ = \
-    "Takes in a pair of partitions (List[str]) and computes the optimal matching between " \
+wordnet_partition_score.__docs__ = (
+    "Takes in a pair of partitions (List[str]) and computes the optimal matching between "
     "the parts of these partitions based on WordNet synsets or exact string match."
+)
 
 
 def wordnet_score(
@@ -153,7 +156,7 @@ wordnet_wup_score.__name__ = "wordnet_wup_score"
 def cluster_score(
     pred_answers: List[str],
     true_answers: Union[Dict[str, int], Dict[frozenset, int]],
-    question_string:str,
+    question_string: str,
     score_func: Callable = exact_match,
     cluster_reduction_func: Callable = np.max,
 ) -> np.ndarray:
@@ -166,6 +169,7 @@ def cluster_score(
         )
     return all_pairs_scores(pred_answers, true_answers, score_func)
 
+
 def cluster_score_considering_whole_cluster(
     pred_answers: List[str],
     true_answers: Union[Dict[str, int], Dict[frozenset, int]],
@@ -173,7 +177,9 @@ def cluster_score_considering_whole_cluster(
     score_func: Callable = exact_match,
     cluster_reduction_func: Callable = np.max,
 ) -> np.ndarray:
-    postulated_output = mlm_similarity_scorer.train_models(question_string, pred_answers, true_answers)
+    postulated_output = mlm_similarity_scorer.train_models(
+        question_string, pred_answers, true_answers
+    )
     return postulated_output
 
 

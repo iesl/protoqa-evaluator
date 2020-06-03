@@ -13,12 +13,12 @@ from family_feud_evaluator.evaluation import (
     set_intersection,
     family_feud_5_incorrect,
     maxpred1,
-maxpred3,
-maxpred5,
-maxpred10,
-maxinc1,
-maxinc3,
-maxinc5
+    maxpred3,
+    maxpred5,
+    maxpred10,
+    maxinc1,
+    maxinc3,
+    maxinc5,
 )
 from family_feud_evaluator.scoring import (
     longest_common_subsequence_score,
@@ -41,15 +41,14 @@ EVAL_METHODS = [
 ]
 
 
-
 EVAL_METHODS = [
-      ("mlm-maxpred1",   maxpred1),
-("mlm-maxpred3",maxpred3),
-("mlm-maxpred5",maxpred5),
-("mlm-maxpred10",maxpred10),
-("mlm-maxinc1",maxinc1),
-("mlm-maxinc3",maxinc3),
-("mlm-maxinc5",maxinc5)
+    ("mlm-maxpred1", maxpred1),
+    ("mlm-maxpred3", maxpred3),
+    ("mlm-maxpred5", maxpred5),
+    ("mlm-maxpred10", maxpred10),
+    ("mlm-maxinc1", maxinc1),
+    ("mlm-maxinc3", maxinc3),
+    ("mlm-maxinc5", maxinc5),
 ]
 SIM_FUNCS = [
     ("Exact Match", exact_match),
@@ -58,6 +57,7 @@ SIM_FUNCS = [
     ("WordNet", wordnet_score),
 ]
 HARD_SOFT = [("Hard", np.round)]
+
 
 def calc_scores(predictions: Dict[str, List[str]], question_data: Dict) -> float:
 
@@ -68,11 +68,10 @@ def calc_scores(predictions: Dict[str, List[str]], question_data: Dict) -> float
         if eval_method[0].startswith("mlm-"):
             print("Eval method: {}".format(eval_method[0].split("mlm-")[1]))
             print("Similarity Function: {}".format("mlm"))
-            method = partial(
-                        eval_method[1])
+            method = partial(eval_method[1])
             scores = evaluate(
-                    method, question_data=question_data, answers_dict=predictions
-            )           
+                method, question_data=question_data, answers_dict=predictions
+            )
             avg_score = np.mean([s.score for _, s in scores.items()])
             rows.append(avg_score)
         else:
