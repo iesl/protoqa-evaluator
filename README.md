@@ -3,7 +3,7 @@
 Clone via git and install (preferably in the same virtual environment as your model) with pip:
 ```bash
 # conda activate family_feud (or similar)
-git clone https://gitlab.com/boratko/family_feud_evaluator
+git clone <repo-url>
 pip install -e family_feud_evaluator
 ```
 
