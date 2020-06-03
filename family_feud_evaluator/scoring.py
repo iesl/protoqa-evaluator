@@ -10,6 +10,10 @@ from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet as wn
 from scipy.optimize import linear_sum_assignment
+from .mlmsim import MLMSim
+
+
+mlm_similarity_scorer = MLMSim()
 
 EN_STOPWORDS = frozenset(stopwords.words("english"))
 
@@ -149,6 +153,7 @@ wordnet_wup_score.__name__ = "wordnet_wup_score"
 def cluster_score(
     pred_answers: List[str],
     true_answers: Union[Dict[str, int], Dict[frozenset, int]],
+    question_string:str,
     score_func: Callable = exact_match,
     cluster_reduction_func: Callable = np.max,
 ) -> np.ndarray:
@@ -160,6 +165,16 @@ def cluster_score(
             reduction_func=cluster_reduction_func,
         )
     return all_pairs_scores(pred_answers, true_answers, score_func)
+
+def cluster_score_considering_whole_cluster(
+    pred_answers: List[str],
+    true_answers: Union[Dict[str, int], Dict[frozenset, int]],
+    question_string: str,
+    score_func: Callable = exact_match,
+    cluster_reduction_func: Callable = np.max,
+) -> np.ndarray:
+    postulated_output = mlm_similarity_scorer.train_models(question_string, pred_answers, true_answers)
+    return postulated_output
 
 
 ##########################################################################
