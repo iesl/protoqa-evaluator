@@ -1,23 +1,12 @@
-import transformers
-import json
-import tokenizers
-import torch
-
-# from tokenizers import BertWordPieceTokenizer
-# from transformers import BertModel
-import time
-import random
-import numpy
-import math
-
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, Matern
-import pickle
 from transformers import RobertaConfig, RobertaModel, RobertaTokenizer
 from transformers import BertModel, BertTokenizer
-from sklearn.svm import SVR
+import torch
 
-# RobertaModel,    RobertaTokenizer,    'roberta-base'
+import time
+import numpy
+from warnings import warn
+from typing import *
 
 
 def transform_question(question):
@@ -168,3 +157,40 @@ class MLMSim(torch.nn.Module):
                     + "\n"
                 )
             return scoring_map
+
+
+class ClusterScoreConsideringWholeCluster:
+    """
+    For MLM similarity, we do not break up the word into tokens, and the different answer clusters must all be
+    considered simultaneously, and thus this single class takes the place of the entire cluster scoring function.
+    """
+
+    def __init__(self):
+        self.mlm_similarity_scorer = None
+
+    def __call__(
+        self,
+        pred_answers: List[str],
+        true_answers: Union[Dict[str, int], Dict[frozenset, int]],
+        question_string: str,
+        score_func: Optional[Callable] = None,
+        cluster_reduction_func: Optional[Callable] = None,
+    ) -> np.ndarray:
+        # Note: The function signature here has been expanded to contain the same parameters as the cluster scoring
+        # function, however many of these parameters are ignored. In the event that they have actually been passed,
+        # we throw a warning.
+        if score_func is not None:
+            warn(
+                "MLM similarity was incorrectly called with an explicit score_func, this is being ignored."
+            )
+        if cluster_reduction_func is not None:
+            warn(
+                "MLM similarity was incorrectly called with an explicit cluster_reduction_func, this is being ignored."
+            )
+
+        if self.mlm_similarity_scorer is None:
+            self.mlm_similarity_scorer = MLMSim()
+        postulated_output = self.mlm_similarity_scorer.train_models(
+            question_string, pred_answers, true_answers
+        )
+        return postulated_output

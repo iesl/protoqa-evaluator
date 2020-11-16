@@ -9,8 +9,8 @@ pip install -e family_feud_evaluator
 
 Example use:
 ```python
-from family_feud_evaluator.data_processing import load_data_from_jsonl
-from family_feud_evaluator.evaluation import evaluate, family_feud
+from protoqa_evaluator.data_processing import load_data_from_jsonl
+from protoqa_evaluator.evaluation import evaluate, family_feud
 
 question_data = load_data_from_jsonl('path/to/dataset_lines.jsonl')
 evaluate(family_feud, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
@@ -18,15 +18,15 @@ evaluate(family_feud, question_data, answers_dict={'q0': ['umbrella', 'hat', 'su
 ```
 As above, model answers should be specified as a dict of lists. There are other evaluation methods available, for example:
 ```python
-from family_feud_evaluator.evaluation import fast_money
+from protoqa_evaluator.evaluation import fast_money
 evaluate(fast_money, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
 # Returns {'q0': 1.0}
 ```
 ### Creating a Custom Evaluation Method
 It is easy to create your own evaluation method using the `general_eval`. For example, let's make a set intersection evaluation which simply tells us what percentage of the true answer clusters we got right, and let's also use `longest_common_subsequence_score`  as our answer scoring function so that 'sun glasses' gets counted in the 'sunglasses' cluster:
 ```python
-from family_feud_evaluator.evaluation import general_eval
-from family_feud_evaluator.scoring import longest_common_subsequence_score
+from protoqa_evaluator.evaluation import general_eval
+from protoqa_evaluator.scoring import longest_common_subsequence_score
 from functools import partial
 
 soft_lcsubsequence_set_int = partial(
@@ -90,7 +90,7 @@ pip install transformers
 
 The BERT model works by converting the answers to vector representations before passing them to the evaluation functions. We have to specify this preprocessing step as follows:
 ```python
-from family_feud_evaluator.bert_scoring import TransformerScoringModel, hard_bert_eval 
+from protoqa_evaluator.bert_scoring import TransformerScoringModel, hard_bert_eval 
 bert_scoring_model = TransformerScoringModel() # this sets up the model and loads the weights
 evaluate(hard_bert_eval, question_data, answers_dict={'q0': ['age','demeanor','social status']}, bert_scoring_model.preprocessing)
 ```

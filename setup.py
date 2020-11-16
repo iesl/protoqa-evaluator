@@ -1,18 +1,22 @@
-from distutils.core import setup
+"""
+Evaluation framework for ProtoQA common sense QA dataset
+"""
+import fastentrypoints
+from setuptools import find_packages, setup
 
 setup(
-    name="family_feud_evaluator",
+    name="protoqa_evaluator",
     version="0.4",
-    py_modules=["family_feud_evaluator"],
-    install_requires=["scipy", "numpy", "nltk", "more-itertools", "transformers",],
+    packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+    package_dir={"": "src"},
+    description="Evaluation scripts for ProtoQA common sense QA dataset.",
+    install_requires=["Click>=7.1.2", "scipy", "numpy", "nltk", "more-itertools"],
     extras_require={
         "test": ["pytest"],
-        "crowdsource_conversion": ["pandas", "xlrd"],
-        "bert_similarity": ["torch", "transformers", "sklearn"],
+        "crowdsource-conversion": ["pandas", "xlrd"],
+        "mlm-similarity": ["torch", "transformers", "scikit-learn"],
     },
     entry_points={
-        "console_scripts": [
-            "family_feud_evaluator = family_feud_evaluator.__main__:main"
-        ]
+        "console_scripts": ["protoqa_evaluator = protoqa_evaluator.__main__:main"]
     },
 )

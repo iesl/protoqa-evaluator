@@ -12,8 +12,6 @@ from nltk.corpus import stopwords
 from nltk.corpus import wordnet as wn
 from scipy.optimize import linear_sum_assignment
 
-from .mlmsim import MLMSim
-
 nltk.download("stopwords")
 nltk.download("punkt")
 nltk.download("wordnet")
@@ -171,26 +169,6 @@ def cluster_score(
             reduction_func=cluster_reduction_func,
         )
     return all_pairs_scores(pred_answers, true_answers, score_func)
-
-
-class ClusterScoreConsideringWholeCluster:
-    def __init__(self):
-        self.mlm_similarity_scorer = None
-
-    def __call__(
-        self,
-        pred_answers: List[str],
-        true_answers: Union[Dict[str, int], Dict[frozenset, int]],
-        question_string: str,
-        score_func: Callable = exact_match,
-        cluster_reduction_func: Callable = np.max,
-    ) -> np.ndarray:
-        if self.mlm_similarity_scorer is None:
-            self.mlm_similarity_scorer = MLMSim()
-        postulated_output = self.mlm_similarity_scorer.train_models(
-            question_string, pred_answers, true_answers
-        )
-        return postulated_output
 
 
 ##########################################################################

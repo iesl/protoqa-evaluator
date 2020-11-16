@@ -1,6 +1,6 @@
 import pytest
 
-from family_feud_evaluator.scoring import *
+from protoqa_evaluator.scoring import *
 
 
 class AnswerScoreExample(NamedTuple):

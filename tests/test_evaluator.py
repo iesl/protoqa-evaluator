@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from family_feud_evaluator import *
-from family_feud_evaluator.evaluation import *
+from protoqa_evaluator import *
+from protoqa_evaluator.evaluation import *
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -19,7 +19,7 @@ except ImportError:
 
 try:
     import torch
-    from family_feud_evaluator.bert_scoring import (
+    from protoqa_evaluator.bert_scoring import (
         TransformerScoringModel,
         hard_bert_eval,
     )
@@ -39,13 +39,16 @@ eval_methods = {
         set_intersection, score_func=jaro_winkler_similarity
     ),
     "hard_jaro_winkler_set_intersection": partial(
-        hard_set_intersection, score_func=jaro_winkler_similarity,
+        hard_set_intersection,
+        score_func=jaro_winkler_similarity,
     ),
     "hard_lcsubstring_set_int": partial(
-        hard_set_intersection, score_func=longest_common_substring_score,
+        hard_set_intersection,
+        score_func=longest_common_substring_score,
     ),
     "hard_lcsubseq_set_int": partial(
-        hard_set_intersection, score_func=longest_common_subsequence_score,
+        hard_set_intersection,
+        score_func=longest_common_subsequence_score,
     ),
     "hard_lcsubstring": partial(
         general_eval,
@@ -58,10 +61,14 @@ eval_methods = {
         score_matrix_transformation=np.round,
     ),
     "fast_money_wn_sim": partial(
-        fast_money, score_func=wordnet_score, score_matrix_transformation=np.round,
+        fast_money,
+        score_func=wordnet_score,
+        score_matrix_transformation=np.round,
     ),
     "family_feud_wn_sim": partial(
-        family_feud, score_func=wordnet_score, score_matrix_transformation=np.round,
+        family_feud,
+        score_func=wordnet_score,
+        score_matrix_transformation=np.round,
     ),
 }
 

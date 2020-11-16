@@ -5,8 +5,8 @@ from typing import *
 import numpy as np
 from tabulate import tabulate
 
-from family_feud_evaluator.data_processing import load_data_from_jsonl, load_predictions
-from family_feud_evaluator.evaluation import (
+from protoqa_evaluator.data_processing import load_data_from_jsonl, load_predictions
+from protoqa_evaluator.evaluation import (
     evaluate,
     family_feud,
     fast_money,
@@ -20,7 +20,7 @@ from family_feud_evaluator.evaluation import (
     maxinc3,
     maxinc5,
 )
-from family_feud_evaluator.scoring import (
+from protoqa_evaluator.scoring import (
     longest_common_subsequence_score,
     longest_common_substring_score,
     wordnet_score,
