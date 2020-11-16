@@ -109,45 +109,33 @@ set_intersection = partial(general_eval, assign_cluster_scores=False)
 
 hard_set_intersection = partial(set_intersection, score_matrix_transformation=np.round)
 
-mlm_family_feud = partial(
-    general_eval,
-    max_incorrect=3,
-    cluster_score_func=ClusterScoreConsideringWholeCluster(),
-)
 maxpred1 = partial(
     general_eval,
     max_pred_answers=1,
-    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxpred3 = partial(
     general_eval,
     max_pred_answers=3,
-    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxpred5 = partial(
     general_eval,
     max_pred_answers=5,
-    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxpred10 = partial(
     general_eval,
     max_pred_answers=10,
-    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxinc1 = partial(
     general_eval,
     max_pred_answers=1,
-    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxinc3 = partial(
     general_eval,
     max_pred_answers=3,
-    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 maxinc5 = partial(
     general_eval,
     max_pred_answers=5,
-    cluster_score_func=ClusterScoreConsideringWholeCluster(),
 )
 
 # Direct implementations of some of the simpler algorithms,
