@@ -1,25 +1,25 @@
-## API and functions for evaluating Family Feud style question/answers.
+## API and functions for evaluating ProtoQA question/answers.
 
 Clone via git and install (preferably in the same virtual environment as your model) with pip:
 ```bash
-# conda activate family_feud (or similar)
+# conda activate protoqa-evaluator (or similar)
 git clone <repo-url>
-pip install -e family_feud_evaluator
+pip install -e protoqa-evaluator
 ```
 
 Example use:
 ```python
 from protoqa_evaluator.data_processing import load_data_from_jsonl
-from protoqa_evaluator.evaluation import evaluate, family_feud
+from protoqa_evaluator.evaluation import evaluate, maxinc3
 
 question_data = load_data_from_jsonl('path/to/dataset_lines.jsonl')
-evaluate(family_feud, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
+evaluate(maxinc3, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
 # Returns {'q0': 0.3838383838}
 ```
 As above, model answers should be specified as a dict of lists. There are other evaluation methods available, for example:
 ```python
-from protoqa_evaluator.evaluation import fast_money
-evaluate(fast_money, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
+from protoqa_evaluator.evaluation import maxpred1
+evaluate(maxpred1, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
 # Returns {'q0': 1.0}
 ```
 ### Creating a Custom Evaluation Method
@@ -82,13 +82,13 @@ wordnet_wup_score = partial(wordnet_score, score_func=wordnet_wup_partition_scor
 ```
 You can now pass `wordnet_wup_score` as the `score_func` to an evaluation method if you would like. (Note: there is no need for you to repeat the steps above, as it is already included in `family_feud_evaluator.scoring`. It is included here for demonstration purposes.)
 
-### BERT Model
-This uses the huggingface implementation of the transformer. If you don't have this installed, you can do so by running
+### MLM Model Similarity
+This uses the Hugging Face implementation of the transformer and SciKit Learn. You can install the prerequisites via
 ```bash
-pip install transformers
+pip install -e protoqa-evaluator[mlm-similarity]
 ```
 
-The BERT model works by converting the answers to vector representations before passing them to the evaluation functions. We have to specify this preprocessing step as follows:
+The MLM similarity method works by converting the answers to vector representations before passing them to the evaluation functions. We have to specify this preprocessing step as follows:
 ```python
 from protoqa_evaluator.bert_scoring import TransformerScoringModel, hard_bert_eval 
 bert_scoring_model = TransformerScoringModel() # this sets up the model and loads the weights
@@ -98,9 +98,9 @@ evaluate(hard_bert_eval, question_data, answers_dict={'q0': ['age','demeanor','s
 ### Testing
 The package has tests written with `pytest`. To install test dependencies you can run
 ```bash
-pip install -e family_feud_evaluator[test]
+pip install -e protoqa-evaluator[test]
 ```
 You can run the tests with
 ```bash
-pytest family_feud_evaluator
+pytest protoqa-evaluator
 ```
