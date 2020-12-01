@@ -22,7 +22,7 @@ __all__ = [
     "load_data_from_jsonl",
     "save_to_jsonl",
     "save_question_cluster_data_to_input_jsonl",
-    "load_predictions",
+    "load_predictions_from_jsonl",
     "load_ranking_data",
     "convert_ranking_data_to_answers",
 ]
@@ -32,24 +32,26 @@ def default_string_preprocessing(pred_answer: str, length_limit: int = 50) -> st
     return pred_answer.lower()[:length_limit].strip()
 
 
-def _load_excel_sheets(
-    data_path: Union[Path, str]
-) -> Tuple[Dict[str, pd.DataFrame], str]:
-    """
-    Loads excel data with multiple sheets.
-    :param data_path:  Path to excel file.
-    :return: Sheets, which is a Dict of sheet names to pandas DataFrames, and a hash of the data
-    """
-    if not ABLE_TO_LOAD_EXCEL:
-        raise Exception(
-            "Was not able to import pandas and xlrd, which is required for conversion."
-        )
-    else:
-        data_path = Path(data_path)
-        with open(data_path, mode="rb") as f:
-            data_hash = hashlib.md5(f.read()).hexdigest()
-            sheets = pd.read_excel(f, sheet_name=None)
-        return sheets, data_hash
+if ABLE_TO_LOAD_EXCEL:
+
+    def _load_excel_sheets(
+        data_path: Union[Path, str]
+    ) -> Tuple[Dict[str, pd.DataFrame], str]:
+        """
+        Loads excel data with multiple sheets.
+        :param data_path:  Path to excel file.
+        :return: Sheets, which is a Dict of sheet names to pandas DataFrames, and a hash of the data
+        """
+        if not ABLE_TO_LOAD_EXCEL:
+            raise Exception(
+                "Was not able to import pandas and xlrd, which is required for conversion."
+            )
+        else:
+            data_path = Path(data_path)
+            with open(data_path, mode="rb") as f:
+                data_hash = hashlib.md5(f.read()).hexdigest()
+                sheets = pd.read_excel(f, sheet_name=None)
+            return sheets, data_hash
 
 
 def load_data_from_jsonl(data_path: Union[Path, str]) -> Dict:
@@ -67,7 +69,15 @@ def load_data_from_jsonl(data_path: Union[Path, str]) -> Dict:
                     frozenset(ans_cluster["answers"]): ans_cluster["count"]
                     for ans_cluster in q_json["answers-cleaned"]
                 }
-            question_data[q_json["questionid"]] = q_json
+            # The following attempts to handle various formats of the data
+            if "normalized-question" not in q_json:
+                q_json["normalized-question"] = q_json["question"][
+                    "normalized-question"
+                ]
+            if "metadata" in q_json:
+                question_data[q_json["metadata"]["id"]] = q_json
+            else:
+                question_data[q_json["questionid"]] = q_json
     return question_data
 
 
@@ -158,22 +168,21 @@ def save_question_cluster_data_to_input_jsonl(
     data_path: Union[Path, str], q_dict: Dict
 ) -> None:
     """
-    Creates a stub file which contains the questionid, question, and an empty placeholder list for predicted_answers
+    Creates a stub file which contains the question_id, question, and an empty placeholder list for ranked_answers
     """
     with open(data_path, "w") as output_file:
-        for q in q_dict.values():
+        for qid, q in q_dict.items():
             q_new = {}
-            q_new["questionid"] = q["questionid"]
+            q_new["question_id"] = qid
             q_new["question"] = q["question"]
-            q_new["predicted_answers"] = []
+            q_new["ranked_answers"] = []
             json.dump(q_new, output_file)
             output_file.write("\n")
 
 
-def load_predictions(data_path: Union[Path, str]) -> Dict:
+def load_predictions_from_jsonl(data_path: Union[Path, str]) -> Dict:
     """
     Loads jsonl into a simplified dictionary structure which only maps qids to lists of answers.
-    Requires the jsonl to have question_id and predicted_answer fields
     """
 
     if str(data_path).endswith("jsonl"):
@@ -181,9 +190,12 @@ def load_predictions(data_path: Union[Path, str]) -> Dict:
         fin = open(data_path)
         for line in fin:
             line = json.loads(line.strip())
-            qid = line["questionid"]
-            ans = line["predicted_answer"]
-            ans_dict[qid] = ans
+            if "question_id" in line:
+                qid = line["question_id"]
+                ans = line["ranked_answers"]
+                ans_dict[qid] = ans
+            else:
+                ans_dict.update(line)
         fin.close()
         return ans_dict
     else:

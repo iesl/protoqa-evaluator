@@ -2,8 +2,12 @@ from pathlib import Path
 
 import pytest
 
-from protoqa_evaluator import *
 from protoqa_evaluator.evaluation import *
+from protoqa_evaluator.data_processing import (
+    load_data_from_jsonl,
+    save_to_jsonl,
+    load_data_from_excel,
+)
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)

@@ -1,13 +1,29 @@
-## API and functions for evaluating ProtoQA question/answers.
+## Evaluation Script for  ProtoQA question/answers.
 
 Clone via git and install (preferably in the same virtual environment as your model) with pip:
 ```bash
-# conda activate protoqa-evaluator (or similar)
+conda activate protoqa-evaluator (or similar)
 git clone <repo-url>
 pip install -e protoqa-evaluator
 ```
 
-Example use:
+This will install a command-line utility you can use for evaluation, eg.
+
+```bash
+protoqa_evaluator evaluate --similarity_function exact_match targets.jsonl predictions.jsonl
+```
+
+Note that the `predictions.jsonl` file should be a jsonl file where each line has a question id and a ranked list of answers, eg.
+
+```
+{"r1q1": ["age", "job", "name"]}
+{"r1q2": ["fight", "sickness", "sleeping"]}
+```
+
+The `targets.jsonl` file should be in the evaluation format from https://github.com/iesl/protoqa-data.
+
+There is also an API for programmatic evaluation:
+
 ```python
 from protoqa_evaluator.data_processing import load_data_from_jsonl
 from protoqa_evaluator.evaluation import evaluate, maxinc3

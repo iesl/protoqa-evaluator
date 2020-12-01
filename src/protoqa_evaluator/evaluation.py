@@ -1,5 +1,22 @@
 from .data_processing import default_string_preprocessing
 from .scoring import *
+import statistics
+
+
+def multiple_evals(
+    eval_func_dict: Dict[str, Callable], question_data: Dict, answers_dict: Dict
+) -> Dict[str, Dict[str, float]]:
+    eval_details = {}
+    for name, eval_func in eval_func_dict.items():
+        print(f"Evaluating {name}...", flush=True)
+        eval_details[name] = evaluate(
+            evaluation_func=eval_func,
+            question_data=question_data,
+            answers_dict=answers_dict,
+        )
+        eval_score = statistics.mean(x.score for x in eval_details[name].values())
+        print(f"{name}: {eval_score}")
+    return eval_details
 
 
 def evaluate(
@@ -15,7 +32,9 @@ def evaluate(
             true_q, pred_answers = data_preprocessing(true_q, answers_dict)
         true_answers = true_q["answers-cleaned"].copy()
         scores[qid] = evaluation_func(
-            pred_answers, true_answers, question_string=true_q["normalized-question"]
+            pred_answers,
+            true_answers,
+            question_string=true_q["normalized-question"],
         )
     return scores
 
@@ -109,34 +128,27 @@ set_intersection = partial(general_eval, assign_cluster_scores=False)
 
 hard_set_intersection = partial(set_intersection, score_matrix_transformation=np.round)
 
-maxpred1 = partial(
-    general_eval,
-    max_pred_answers=1,
-)
-maxpred3 = partial(
-    general_eval,
-    max_pred_answers=3,
-)
-maxpred5 = partial(
-    general_eval,
-    max_pred_answers=5,
-)
-maxpred10 = partial(
-    general_eval,
-    max_pred_answers=10,
-)
-maxinc1 = partial(
-    general_eval,
-    max_pred_answers=1,
-)
-maxinc3 = partial(
-    general_eval,
-    max_pred_answers=3,
-)
-maxinc5 = partial(
-    general_eval,
-    max_pred_answers=5,
-)
+
+max_answers = {
+    f"Max Answers - {k}": partial(general_eval, max_pred_answers=k)
+    for k in [1, 3, 5, 10]
+}
+max_incorrect = {
+    f"Max Incorrect - {k}": partial(general_eval, max_incorrect=k) for k in [1, 3, 5]
+}
+exact_match_all_eval_funcs = {**max_answers, **max_incorrect}
+
+# WordNet Similarity
+wordnet_all_eval_funcs = {
+    k: partial(v, score_func=wordnet_score, score_matrix_transformation=np.round)
+    for k, v in exact_match_all_eval_funcs.items()
+}
+
+all_eval_funcs = {
+    "exact_match": exact_match_all_eval_funcs,
+    "wordnet": wordnet_all_eval_funcs,
+}
+
 
 # Direct implementations of some of the simpler algorithms,
 # without the functional structure of the general setting.

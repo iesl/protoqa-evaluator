@@ -5,7 +5,10 @@ from typing import *
 import numpy as np
 from tabulate import tabulate
 
-from protoqa_evaluator.data_processing import load_data_from_jsonl, load_predictions
+from protoqa_evaluator.data_processing import (
+    load_data_from_jsonl,
+    load_predictions_from_jsonl,
+)
 from protoqa_evaluator.evaluation import (
     evaluate,
     family_feud,
@@ -105,7 +108,7 @@ def calc_scores(predictions: Dict[str, List[str]], question_data: Dict) -> float
 def main(args):
 
     question_data = load_data_from_jsonl(args.ground_truth_annotation_file)
-    predictions = load_predictions(args.prediction_file)
+    predictions = load_predictions_from_jsonl(args.prediction_file)
     calc_scores(predictions, question_data)
 
 

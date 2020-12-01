@@ -56,3 +56,26 @@ def ranking(
         )
         answers_dict = {k: v for k, v in answers_dict.items() if k not in do_not_use}
     save_to_jsonl(output_jsonl, answers_dict)
+
+
+@main.command()
+@click.argument("targets_jsonl", type=click.Path())
+@click.argument("predictions_jsonl", type=click.Path())
+@click.option(
+    "--similarity_function",
+    default="wordnet",
+    type=click.Choice(["exact_match", "wordnet"], case_sensitive=False),
+)
+def evaluate(targets_jsonl, predictions_jsonl, similarity_function):
+    """Run all evaluation metrics on model outputs"""
+    from .data_processing import load_data_from_jsonl, load_predictions_from_jsonl
+    from .evaluation import multiple_evals, all_eval_funcs
+
+    print(f"Using {similarity_function} similarity.", flush=True)
+    targets = load_data_from_jsonl(targets_jsonl)
+    predictions = load_predictions_from_jsonl(predictions_jsonl)
+    multiple_evals(
+        eval_func_dict=all_eval_funcs[similarity_function],
+        question_data=targets,
+        answers_dict=predictions,
+    )
