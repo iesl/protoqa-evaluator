@@ -13,7 +13,7 @@ setup(
     install_requires=["Click>=7.1.2", "scipy", "numpy", "nltk", "more-itertools"],
     extras_require={
         "test": ["pytest"],
-        "crowdsource-conversion": ["pandas", "xlrd"],
+        "crowdsource-conversion": ["pandas", "openpyxl"],
         "mlm-similarity": ["torch", "transformers", "scikit-learn"],
     },
     entry_points={
