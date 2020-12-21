@@ -25,10 +25,10 @@ The `targets.jsonl` file should be in the evaluation format from https://github.
 There is also an API for programmatic evaluation:
 
 ```python
-from protoqa_evaluator.data_processing import load_data_from_jsonl
+from protoqa_evaluator.data_processing import load_question_answer_clusters_from_jsonl
 from protoqa_evaluator.evaluation import evaluate, maxinc3
 
-question_data = load_data_from_jsonl('path/to/dataset_lines.jsonl')
+question_data = load_question_answer_clusters_from_jsonl('path/to/dataset_lines.jsonl')
 evaluate(maxinc3, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
 # Returns {'q0': 0.3838383838}
 ```
