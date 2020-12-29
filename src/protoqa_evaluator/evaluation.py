@@ -10,6 +10,7 @@ def multiple_evals(
     eval_func_dict: Dict[str, Callable],
     question_data: Dict[str, QuestionAndAnswerClusters],
     answers_dict: Dict[str, List[str]],
+    optimal_ranking: bool = False,
 ) -> Dict[str, Dict[str, float]]:
     eval_details = {}
     for name, eval_func in eval_func_dict.items():
@@ -18,6 +19,7 @@ def multiple_evals(
             evaluation_func=eval_func,
             question_data=question_data,
             answers_dict=answers_dict,
+            optimal_ranking=optimal_ranking,
         )
         eval_score = statistics.mean(x.score for x in eval_details[name].values())
         print(f"{name}: {eval_score}")
@@ -29,6 +31,7 @@ def evaluate(
     question_data: Dict[str, QuestionAndAnswerClusters],
     answers_dict: Dict[str, List[str]],
     data_preprocessing: Optional[Callable] = None,
+    optimal_ranking: bool = False,
 ) -> Dict[str, float]:
     scores = dict()
     for qid, pred_answers in answers_dict.items():
@@ -40,6 +43,7 @@ def evaluate(
             pred_answers,
             true_answers,
             question_string=true_q.question,
+            optimal_ranking=optimal_ranking,
         )
     return scores
 
@@ -71,8 +75,9 @@ def general_eval(
     score_matrix_transformation: Optional[Callable] = None,
     assign_cluster_scores: bool = True,
     calc_oracle_score: bool = True,
+    optimal_ranking: bool = False,
 ) -> EvalResult:
-    if max_pred_answers is not None:
+    if max_pred_answers is not None and not optimal_ranking:
         pred_answers = pred_answers[:max_pred_answers]
     pred_answers = [string_preprocessing(pred_answer) for pred_answer in pred_answers]
     score_matrix = cluster_score_func(
@@ -84,11 +89,30 @@ def general_eval(
     )
     if score_matrix_transformation is not None:
         score_matrix = score_matrix_transformation(score_matrix)
-    if max_incorrect is not None:
+    if max_incorrect is not None and not optimal_ranking:
         score_matrix = limit_total_wrong(score_matrix, max_incorrect)
     if assign_cluster_scores:
         score_matrix *= np.array(list(true_answers.values()))[None]
     score, row_ind, col_ind = get_optimal_score(score_matrix)
+
+    if optimal_ranking:
+        reward_and_ind = [(score_matrix[row_ind[z], col_ind[z]], row_ind[z], col_ind[z])
+                          for z in range(len(row_ind))]
+        sorted_by_reward = sorted(reward_and_ind, key=lambda z: z[0], reverse=True)
+        _, row_ind, col_ind = zip(*sorted_by_reward)
+        row_ind = np.array(row_ind)
+        col_ind = np.array(col_ind)
+        if max_pred_answers is not None:
+            row_ind = row_ind[:max_pred_answers]
+            col_ind = col_ind[:max_pred_answers]
+        if max_incorrect is not None:
+            for i in range(len(row_ind)):
+                if score_matrix[row_ind[i], col_ind[i]] == 0:
+                    break
+            row_ind = row_ind[:i]
+            col_ind = col_ind[:i]
+        score = score_matrix[row_ind, col_ind].sum()
+
     answer_assignment = dict()
     true_answers_list = list(true_answers.keys())
     for r, c in zip(row_ind, col_ind):
@@ -114,6 +138,7 @@ def general_eval(
             score_matrix_transformation=score_matrix_transformation,
             assign_cluster_scores=assign_cluster_scores,
             calc_oracle_score=False,
+            optimal_ranking=False,
         )
         score /= oracle_score
     return EvalResult(
@@ -136,10 +161,10 @@ hard_set_intersection = partial(set_intersection, score_matrix_transformation=np
 
 max_answers = {
     f"Max Answers - {k}": partial(general_eval, max_pred_answers=k)
-    for k in [1, 3, 5, 10]
+    for k in [None, 1, 3, 5, 10]
 }
 max_incorrect = {
-    f"Max Incorrect - {k}": partial(general_eval, max_incorrect=k) for k in [1, 3, 5]
+    f"Max Incorrect - {k}": partial(general_eval, max_incorrect=k) for k in [None, 1, 3, 5]
 }
 exact_match_all_eval_funcs = {**max_answers, **max_incorrect}
 
