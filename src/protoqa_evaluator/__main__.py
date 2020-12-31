@@ -112,7 +112,8 @@ def old_jsonl_to_new(input_jsonl, output_jsonl):
     default="wordnet",
     type=click.Choice(["exact_match", "wordnet"], case_sensitive=False),
 )
-def evaluate(targets_jsonl, predictions_jsonl, similarity_function):
+@click.option("--optimal_ranking", is_flag=True)
+def evaluate(targets_jsonl, predictions_jsonl, similarity_function, optimal_ranking):
     """Run all evaluation metrics on model outputs"""
     from .data_processing import (
         load_question_answer_clusters_from_jsonl,
@@ -122,9 +123,14 @@ def evaluate(targets_jsonl, predictions_jsonl, similarity_function):
 
     print(f"Using {similarity_function} similarity.", flush=True)
     targets = load_question_answer_clusters_from_jsonl(targets_jsonl)
-    predictions = load_predictions_from_jsonl(predictions_jsonl)
+    # In case questions in predictions_jsonl is a superset of those in targets_jsonl
+    all_predictions = load_predictions_from_jsonl(predictions_jsonl)
+    predictions = {}
+    for key in targets:
+        predictions[key] = all_predictions[key]
     multiple_evals(
         eval_func_dict=all_eval_funcs[similarity_function],
         question_data=targets,
         answers_dict=predictions,
+        optimal_ranking=optimal_ranking,
     )

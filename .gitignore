@@ -203,3 +203,6 @@ dmypy.json
 *.iml
 out
 gen
+
+# evaluation results
+results

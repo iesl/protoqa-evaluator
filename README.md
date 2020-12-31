@@ -22,13 +22,15 @@ Note that the `predictions.jsonl` file should be a jsonl file where each line ha
 
 The `targets.jsonl` file should be in the evaluation format from https://github.com/iesl/protoqa-data.
 
+Notice that predictions and targets are both ranked lists. By default, predicted rankings are used for evaluation. For example, "Max Answers k" scores the first k answers in the predicted ranked lists. Alternatively, evaluation can be done with `--optimal_ranking` flag. All predicted answers will be matched to all reference answers. The "Max Answers k" will then sum the scores of the k answers that achieve the most points. 
+
 There is also an API for programmatic evaluation:
 
 ```python
-from protoqa_evaluator.data_processing import load_data_from_jsonl
+from protoqa_evaluator.data_processing import load_question_answer_clusters_from_jsonl
 from protoqa_evaluator.evaluation import evaluate, maxinc3
 
-question_data = load_data_from_jsonl('path/to/dataset_lines.jsonl')
+question_data = load_question_answer_clusters_from_jsonl('path/to/dataset_lines.jsonl')
 evaluate(maxinc3, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
 # Returns {'q0': 0.3838383838}
 ```
