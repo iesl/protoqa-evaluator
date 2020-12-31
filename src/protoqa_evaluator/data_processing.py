@@ -5,6 +5,7 @@ from collections import Counter
 from pathlib import Path
 from typing import *
 
+from xopen import xopen
 from .utils import query_yes_no
 
 try:
@@ -241,37 +242,91 @@ def save_to_jsonl(data_path: Union[Path, str], qa_dict: Dict[str, Dict]) -> None
             output_file.write("\n")
 
 
-def load_predictions_from_jsonl(data_path: Union[Path, str]) -> Dict[str, List[str]]:
+class ProtoQAFormatError(ValueError):
+    pass
+
+
+def convert_JSONL_line_to_prediction(line) -> Tuple[str, List[str]]:
     """
-    Loads jsonl into a simplified dictionary structure which only maps qids to lists of answers.
+    Converts a JSONL-processed object into a tuple `(question_id, ranked_answer_list)`.
+
     Each line in the jsonl file should have the following format:
     ```
     {
       "question_id": <str> question id,
       "ranked_answers": ["answer_one", "answer_two", ...]
     }
+    ```
     If data_path is a json file instead, it should already be a map from question id to a ranked list of answers, eg.
+    ```
     {
         "r1q1": ["answer_one", "answer_two", ...],
         "r1q2": ["answer_one", "answer_two", ...],
         ...
     }
     ```
-    :param data_path: Path for jsonl file
+
+    :param line: single (processed) line from a JSONL file
+    :return: True if line is valid alternate prediction format, False otherwise
+    :raises: ProtoQAFormatError if line does not match this format.
+    """
+    line = json.loads(line.strip())
+    try:
+        if "question_id" in line:
+            qid = line["question_id"]
+            ans = line["ranked_answers"]
+        else:
+            assert len(line) == 1
+            qid, ans = next(iter(line.items()))
+
+        assert isinstance(qid, str)
+        assert isinstance(ans, list)
+    except AssertionError:
+        raise ProtoQAFormatError("Incorrect format")
+    return qid, ans
+
+
+def load_predictions_from_jsonl(data_path: Union[Path, str]) -> Dict[str, List[str]]:
+    """
+    Loads JSONL into a simplified dictionary structure which only maps qids to lists of answers.
+    If data_path is a JSON file, it should be in this format:
+    ```
+    {
+        "r1q1": ["answer_one", "answer_two", ...],
+        "r1q2": ["answer_one", "answer_two", ...],
+        ...
+    }
+    ```
+    If data_path is a JSONL file, each line should have the one of the following formats:
+    ```
+    {
+      "question_id": <str> question id,
+      "ranked_answers": ["answer_one", "answer_two", ...]
+    }
+    ```
+    or
+    ```
+    {
+      "question_id": ["answer_one", "answer_two", ...]
+    }
+    ```
+
+    :param data_path: Path for JSON/JSONL file
     :return: Dict from question id to ranked list of answer strings
     """
     data_path = Path(data_path).expanduser()
+
+    if ".json" in data_path.suffixes:
+        return json.load(xopen(data_path))
 
     if str(data_path).endswith("jsonl"):
         ans_dict = dict()
         fin = open(data_path)
         for line in fin:
-            line = json.loads(line.strip())
-            if "question_id" in line:
-                qid = line["question_id"]
-                ans = line["ranked_answers"]
+            try:
+                qid, ans = convert_JSONL_line_to_prediction(line)
                 ans_dict[qid] = ans
-            else:
+            except ProtoQAFormatError:
                 warnings.warn(
                     f"Predictions file {data_path} does not seem to be in the correct format. "
                     f"We will continue to load it, but you may experience errors in evaluation."
@@ -379,7 +434,7 @@ def convert_ranking_data_to_answers(
         completed_rankings = {k: v for k, v in ranking_data.items() if len(v) >= 10}
         if len(completed_rankings) < len(ranking_data):
             warnings.warn(
-                f"Missing completed rankings for {len(ranking_data)-len(completed_rankings)} questions."
+                f"Missing completed rankings for {len(ranking_data) - len(completed_rankings)} questions."
             )
     else:
         completed_rankings = ranking_data
@@ -389,7 +444,7 @@ def convert_ranking_data_to_answers(
     )
     if len(questions_in_both) < len(completed_rankings):
         warnings.warn(
-            f"Missing ground-truth clusters for {len(completed_rankings)-len(questions_in_both)} completed rankings."
+            f"Missing ground-truth clusters for {len(completed_rankings) - len(questions_in_both)} completed rankings."
         )
         print(set(completed_rankings.keys()).difference(question_to_ids.keys()))
 
