@@ -1,13 +1,20 @@
+import warnings
+from functools import partial
 from pathlib import Path
 
 import pytest
-
-from protoqa_evaluator.evaluation import *
+from protoqa_evaluator.common_evaluations import (
+    fast_money,
+    family_feud,
+    set_intersection,
+    hard_set_intersection,
+)
 from protoqa_evaluator.data_processing import (
-    load_data_from_jsonl,
+    load_question_answer_clusters_from_jsonl,
     save_to_jsonl,
     load_data_from_excel,
 )
+from protoqa_evaluator.evaluation import *
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -212,12 +219,12 @@ def data_path():
 
 
 def test_load_data(data_path):
-    load_data_from_jsonl(data_path)
+    load_question_answer_clusters_from_jsonl(data_path)
 
 
 @pytest.fixture()
 def question_data(data_path):
-    return load_data_from_jsonl(data_path)
+    return load_question_answer_clusters_from_jsonl(data_path)
 
 
 def test_access_data(question_data):
@@ -226,9 +233,10 @@ def test_access_data(question_data):
 
 
 def test_evaluate_single_question(question_data):
-    assert evaluate(
+    out = evaluate(
         family_feud, question_data, answers_dict={"q0": ["umbrella", "hat", "towel"]}
-    ) == {
+    )
+    expected = {
         "q0": EvalResult(
             score=0.3838383838383838,
             score_matrix=np.array(
@@ -238,9 +246,14 @@ def test_evaluate_single_question(question_data):
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                 ]
             ),
-            answer_assignment={"umbrella": "umbrella", "hat": None, "towel": None},
+            answer_assignment={
+                "umbrella": frozenset(["umbrella"]),
+                "hat": None,
+                "towel": None,
+            },
         )
     }
+    assert out == expected
 
 
 @pytest.fixture()
@@ -258,13 +271,15 @@ def answers_5():
 
 def test_evaluate_multiple_questions(answers_5, question_data):
     eval_output = evaluate(set_intersection, question_data, answers_dict=answers_5)
-    assert {k: v.score for k, v in eval_output.items()} == {
+    out = {k: v.score for k, v in eval_output.items()}
+    expected = {
         "q0": 2 / 6,
         "q1": 2 / 7,
         "q2": 0,
         "q3": 1 / 7,
         "q4": 1 / 5,
     }
+    assert out == expected
 
 
 def test_readme_example(question_data):
@@ -297,9 +312,9 @@ def test_readme_example(question_data):
                 ]
             ),
             answer_assignment={
-                "umbrella": "umbrella",
-                "hat": "sun hat",
-                "sun glasses": "sunglasses",
+                "umbrella": frozenset(["umbrella"]),
+                "hat": frozenset(["sun hat"]),
+                "sun glasses": frozenset(["sunglasses"]),
             },
         )
     }
@@ -568,12 +583,18 @@ crowdsource_eval_result = {
     ),
 }
 
+q_qa_clusters = {
+    k: QuestionAndAnswerClusters(
+        v["questionid"], v["normalized-question"], v["answers-cleaned"]
+    )
+    for k, v in q_dict.items()
+}
+
 
 def test_crowdsource_eval_mult():
-    assert (
-        evaluate(set_intersection, q_dict, answers_dict=crowdsource_answers)
-        == crowdsource_eval_result
-    )
+    out = evaluate(set_intersection, q_qa_clusters, answers_dict=crowdsource_answers)
+    expected = crowdsource_eval_result
+    assert out == expected
 
 
 @pytest.fixture()
@@ -582,15 +603,9 @@ def crowdsource_jsonl_path():
     return mod_path / "crowdsource_data_stub.jsonl"
 
 
-def test_crowdsource_data_save(tmpdir):
-    crowdsource_jsonl_write_path = tmpdir.join("crowdsource_data_stub.jsonl")
-    save_to_jsonl(crowdsource_jsonl_write_path, q_dict)
-    assert load_data_from_jsonl(crowdsource_jsonl_write_path) == q_dict
-
-
 @pytest.fixture()
 def crowdsource_jsonl_data(crowdsource_jsonl_path):
-    return load_data_from_jsonl(crowdsource_jsonl_path)
+    return load_question_answer_clusters_from_jsonl(crowdsource_jsonl_path)
 
 
 def test_crowdsource_eval_on_jsonl(crowdsource_jsonl_data):

@@ -112,22 +112,21 @@ def old_jsonl_to_new(input_jsonl, output_jsonl):
     default="wordnet",
     type=click.Choice(["exact_match", "wordnet"], case_sensitive=False),
 )
-@click.option("--optimal_ranking", is_flag=True)
+@click.option("--optimal_ranking", is_flag=True, default=False, help="")
 def evaluate(targets_jsonl, predictions_jsonl, similarity_function, optimal_ranking):
     """Run all evaluation metrics on model outputs"""
     from .data_processing import (
         load_question_answer_clusters_from_jsonl,
         load_predictions_from_jsonl,
     )
-    from .evaluation import multiple_evals, all_eval_funcs
+    from .evaluation import multiple_evals
+    from protoqa_evaluator.common_evaluations import all_eval_funcs
 
     print(f"Using {similarity_function} similarity.", flush=True)
     targets = load_question_answer_clusters_from_jsonl(targets_jsonl)
     # In case questions in predictions_jsonl is a superset of those in targets_jsonl
     all_predictions = load_predictions_from_jsonl(predictions_jsonl)
-    predictions = {}
-    for key in targets:
-        predictions[key] = all_predictions[key]
+    predictions = {k: all_predictions[k] for k in targets}
     multiple_evals(
         eval_func_dict=all_eval_funcs[similarity_function],
         question_data=targets,

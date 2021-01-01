@@ -10,7 +10,14 @@ setup(
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     package_dir={"": "src"},
     description="Evaluation scripts for ProtoQA common sense QA dataset.",
-    install_requires=["Click>=7.1.2", "scipy", "numpy", "nltk", "more-itertools"],
+    install_requires=[
+        "Click>=7.1.2",
+        "scipy",
+        "numpy",
+        "nltk",
+        "more-itertools",
+        "xopen",
+    ],
     extras_require={
         "test": ["pytest"],
         "crowdsource-conversion": ["pandas", "openpyxl"],

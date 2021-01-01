@@ -118,8 +118,17 @@ def load_question_answer_clusters_from_jsonl(
                         frozenset(ans_cluster["answers"]): ans_cluster["count"]
                         for ans_cluster in q_json["answers-cleaned"]
                     }
+                elif "answers-cleaned" in q_json and isinstance(
+                    q_json["answers-cleaned"], dict
+                ):
+                    answer_clusters = {
+                        frozenset([answer]): count
+                        for answer, count in q_json["answers-cleaned"].items()
+                    }
                 else:
-                    raise ValueError(f"Could not load data from {data_path}.")
+                    raise ValueError(
+                        f"Could not load data from {data_path}, unable to find answer clusters."
+                    )
 
             if "question" in q_json and "normalized" in q_json["question"]:
                 question = q_json["question"]["normalized"]
@@ -135,7 +144,9 @@ def load_question_answer_clusters_from_jsonl(
                 ):
                     question = q_json["question"]["normalized-question"]
                 else:
-                    raise ValueError(f"Could not load data from {data_path}.")
+                    raise ValueError(
+                        f"Could not load data from {data_path}, unable to find normalized question."
+                    )
 
             if "metadata" in q_json and "id" in q_json["metadata"]:
                 question_id = q_json["metadata"]["id"]
@@ -147,7 +158,9 @@ def load_question_answer_clusters_from_jsonl(
                 if "questionid" in q_json:
                     question_id = q_json["questionid"]
                 else:
-                    raise ValueError(f"Could not load data from {data_path}.")
+                    raise ValueError(
+                        f"Could not load data from {data_path}, unable to find question id."
+                    )
 
             question_data[question_id] = QuestionAndAnswerClusters(
                 question_id=question_id,
@@ -186,7 +199,7 @@ def load_data_from_excel(
             "fixed_spelling": fixed_spelling,
             "combined": combined,
         }.items():
-            _check_column_name(expected_value, actual_value, sheet_name, data_path.name)
+            _check_column_name(actual_value, expected_value, sheet_name, data_path.name)
 
         q_dict["raw-original-answers"] = Counter(sheet["answer"].dropna().astype(str))
         q_dict["raw-answers-cleaned"] = Counter(

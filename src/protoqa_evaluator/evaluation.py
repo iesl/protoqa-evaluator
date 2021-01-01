@@ -2,7 +2,6 @@ from .data_processing import QuestionAndAnswerClusters, default_string_preproces
 from .scoring import *
 import statistics
 import numpy as np
-from functools import partial
 from typing import *
 
 
@@ -96,8 +95,10 @@ def general_eval(
     score, row_ind, col_ind = get_optimal_score(score_matrix)
 
     if optimal_ranking:
-        reward_and_ind = [(score_matrix[row_ind[z], col_ind[z]], row_ind[z], col_ind[z])
-                          for z in range(len(row_ind))]
+        reward_and_ind = [
+            (score_matrix[row_ind[z], col_ind[z]], row_ind[z], col_ind[z])
+            for z in range(len(row_ind))
+        ]
         sorted_by_reward = sorted(reward_and_ind, key=lambda z: z[0], reverse=True)
         _, row_ind, col_ind = zip(*sorted_by_reward)
         row_ind = np.array(row_ind)
@@ -146,38 +147,7 @@ def general_eval(
     )
 
 
-fast_money = partial(general_eval, max_pred_answers=1)
-
-family_feud = partial(general_eval, max_incorrect=3)
-
-family_feud_2_incorrect = partial(general_eval, max_incorrect=2)
-
-family_feud_5_incorrect = partial(general_eval, max_incorrect=5)
-
-set_intersection = partial(general_eval, assign_cluster_scores=False)
-
-hard_set_intersection = partial(set_intersection, score_matrix_transformation=np.round)
-
-
-max_answers = {
-    f"Max Answers - {k}": partial(general_eval, max_pred_answers=k)
-    for k in [None, 1, 3, 5, 10]
-}
-max_incorrect = {
-    f"Max Incorrect - {k}": partial(general_eval, max_incorrect=k) for k in [None, 1, 3, 5]
-}
-exact_match_all_eval_funcs = {**max_answers, **max_incorrect}
-
 # WordNet Similarity
-wordnet_all_eval_funcs = {
-    k: partial(v, score_func=wordnet_score, score_matrix_transformation=np.round)
-    for k, v in exact_match_all_eval_funcs.items()
-}
-
-all_eval_funcs = {
-    "exact_match": exact_match_all_eval_funcs,
-    "wordnet": wordnet_all_eval_funcs,
-}
 
 
 # Direct implementations of some of the simpler algorithms,

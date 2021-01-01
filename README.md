@@ -22,24 +22,32 @@ Note that the `predictions.jsonl` file should be a jsonl file where each line ha
 
 The `targets.jsonl` file should be in the evaluation format from https://github.com/iesl/protoqa-data.
 
-Notice that predictions and targets are both ranked lists. By default, predicted rankings are used for evaluation. For example, "Max Answers k" scores the first k answers in the predicted ranked lists. Alternatively, evaluation can be done with `--optimal_ranking` flag. All predicted answers will be matched to all reference answers. The "Max Answers k" will then sum the scores of the k answers that achieve the most points. 
 
-There is also an API for programmatic evaluation:
+There is also an API for programmatic evaluation. For example, to calculate a max incorrect @ 3 score with exact match similarity, you can run
 
 ```python
 from protoqa_evaluator.data_processing import load_question_answer_clusters_from_jsonl
-from protoqa_evaluator.evaluation import evaluate, maxinc3
+from protoqa_evaluator.evaluation import general_eval, evaluate
+from functools import partial
 
 question_data = load_question_answer_clusters_from_jsonl('path/to/dataset_lines.jsonl')
-evaluate(maxinc3, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
+max_incorrect_3 = partial(general_eval, max_predicted_answers=3)
+evaluate(max_incorrect_3, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
 # Returns {'q0': 0.3838383838}
 ```
-As above, model answers should be specified as a dict of lists. There are other evaluation methods available, for example:
+As indicated above, model answers should be specified as a dict of (ranked) lists.
+
+Common evaluation methods are available in [src/protoqa_evaluator/common_evaluations.py](src/protoqa_evaluator/common_evaluations.py). To run multiple evaluations, you can pass a dict of evaluation functions to `multiple_evals`, for example:
+
 ```python
-from protoqa_evaluator.evaluation import maxpred1
-evaluate(maxpred1, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
-# Returns {'q0': 1.0}
+from protoqa_evaluator.data_processing import load_question_answer_clusters_from_jsonl
+from protoqa_evaluator.evaluation import multiple_evals
+from protoqa_evaluator.common_evaluations import exact_match_all_eval_funcs
+
+question_data = load_question_answer_clusters_from_jsonl('path/to/dataset_lines.jsonl')
+multiple_evals(exact_match_all_eval_funcs, question_data, answers_dict={'q0': ['umbrella', 'hat', 'sun glasses']})
 ```
+
 ### Creating a Custom Evaluation Method
 It is easy to create your own evaluation method using the `general_eval`. For example, let's make a set intersection evaluation which simply tells us what percentage of the true answer clusters we got right, and let's also use `longest_common_subsequence_score`  as our answer scoring function so that 'sun glasses' gets counted in the 'sunglasses' cluster:
 ```python

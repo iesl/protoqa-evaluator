@@ -1,3 +1,4 @@
+from typing import *
 import pytest
 
 from protoqa_evaluator.scoring import *

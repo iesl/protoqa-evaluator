@@ -11,10 +11,6 @@ from protoqa_evaluator.data_processing import (
 )
 from protoqa_evaluator.evaluation import (
     evaluate,
-    family_feud,
-    fast_money,
-    set_intersection,
-    family_feud_5_incorrect,
     maxpred1,
     maxpred3,
     maxpred5,
@@ -22,6 +18,12 @@ from protoqa_evaluator.evaluation import (
     maxinc1,
     maxinc3,
     maxinc5,
+)
+from protoqa_evaluator.common_evaluations import (
+    fast_money,
+    family_feud,
+    family_feud_5_incorrect,
+    set_intersection,
 )
 from protoqa_evaluator.scoring import (
     longest_common_subsequence_score,
