@@ -112,8 +112,17 @@ def old_jsonl_to_new(input_jsonl, output_jsonl):
     default="wordnet",
     type=click.Choice(["exact_match", "wordnet"], case_sensitive=False),
 )
+@click.option(
+    "--scoring",
+    default="answer_cluster_count",
+    type=click.Choice(
+        ["answer_cluster_count", "traditional_dcg"], case_sensitive=False
+    ),
+)
 @click.option("--optimal_ranking", is_flag=True, default=False, help="")
-def evaluate(targets_jsonl, predictions_jsonl, similarity_function, optimal_ranking):
+def evaluate(
+    targets_jsonl, predictions_jsonl, similarity_function, scoring, optimal_ranking
+):
     """Run all evaluation metrics on model outputs"""
     from .data_processing import (
         load_question_answer_clusters_from_jsonl,
@@ -121,14 +130,26 @@ def evaluate(targets_jsonl, predictions_jsonl, similarity_function, optimal_rank
     )
     from .evaluation import multiple_evals
     from protoqa_evaluator.common_evaluations import all_eval_funcs
+    from functools import partial
 
     print(f"Using {similarity_function} similarity.", flush=True)
     targets = load_question_answer_clusters_from_jsonl(targets_jsonl)
     # In case questions in predictions_jsonl is a superset of those in targets_jsonl
     all_predictions = load_predictions_from_jsonl(predictions_jsonl)
     predictions = {k: all_predictions[k] for k in targets}
+    eval_func_dict = all_eval_funcs[similarity_function]
+    if scoring is "traditional_dcg":
+        from .scoring import traditional_discounted_cumulative_gain
+
+        eval_func_dict = {
+            k: partial(
+                v, score_matrix_transformation=traditional_discounted_cumulative_gain
+            )
+            for k, v in eval_func_dict.items()
+        }
+
     multiple_evals(
-        eval_func_dict=all_eval_funcs[similarity_function],
+        eval_func_dict=eval_func_dict,
         question_data=targets,
         answers_dict=predictions,
         optimal_ranking=optimal_ranking,

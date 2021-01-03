@@ -208,3 +208,14 @@ def limit_total_wrong(score_matrix: np.ndarray, k: int) -> np.ndarray:
             if incorrect >= k:
                 return score_matrix[: i + 1]
     return score_matrix
+
+
+def traditional_discounted_cumulative_gain(score_matrix: np.ndarray) -> np.ndarray:
+    """
+    Apply logarithmic reduction to answers
+    :param score_matrix: score matrix
+    :return: score matrix where the ith row is multiplied by 1 / log(i+1)
+    """
+    num_rows = score_matrix.shape[0]
+    dcg_score = score_matrix / np.log2(np.arange(1, num_rows + 1) + 1)[:, None]
+    return dcg_score

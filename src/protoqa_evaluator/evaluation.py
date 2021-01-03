@@ -86,6 +86,7 @@ def general_eval(
         score_func=score_func,
         cluster_reduction_func=cluster_reduction_func,
     )
+    # score_matrix has values in [0,1] at this point
     if score_matrix_transformation is not None:
         score_matrix = score_matrix_transformation(score_matrix)
     if max_incorrect is not None and not optimal_ranking:
