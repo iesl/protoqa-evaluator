@@ -104,6 +104,26 @@ def old_jsonl_to_new(input_jsonl, output_jsonl):
     print("done!")
 
 
+@convert.command()
+@click.argument("targets_jsonl", type=click.Path(exists=True))
+@click.argument("predictions_jsonl", type=click.Path(exists=True))
+@click.argument("output_jsonl", type=click.Path())
+def extract_predictions(targets_jsonl, predictions_jsonl, output_jsonl):
+    """
+    Extract predictions from PREDICTIONS_JSONL which match a question in TARGETS_JSONL and write it to OUTPUT_JSONL.
+    """
+    from .data_processing import (
+        load_question_answer_clusters_from_jsonl,
+        load_predictions_from_jsonl,
+        save_predictions_to_jsonl,
+    )
+
+    targets = load_question_answer_clusters_from_jsonl(targets_jsonl)
+    all_predictions = load_predictions_from_jsonl(predictions_jsonl)
+    predictions = {k: all_predictions[k] for k in targets}
+    save_predictions_to_jsonl(predictions, output_jsonl)
+
+
 @main.command()
 @click.argument("targets_jsonl", type=click.Path())
 @click.argument("predictions_jsonl", type=click.Path())
