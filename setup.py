@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="protoqa_evaluator",
-    version="0.4",
+    version="1.0",
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     package_dir={"": "src"},
     description="Evaluation scripts for ProtoQA common sense QA dataset.",
