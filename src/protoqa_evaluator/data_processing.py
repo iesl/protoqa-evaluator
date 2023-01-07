@@ -1,3 +1,17 @@
+#    Copyright 2022 The ProtoQA Evaluator Authors.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
 import hashlib
 import json
 import warnings
@@ -479,18 +493,12 @@ def convert_scraped_old_to_new(old: Dict[str, Any]) -> Dict[str, Any]:
     assert len(raw) == len(old["answerstrings"])
     assert set(old["answerstrings"].keys()) == set(raw.keys())
     new = {
-        "metadata": {
-            "id": old["metadata"]["id"],
-            "source": old["metadata"]["source"],
-        },
+        "metadata": {"id": old["metadata"]["id"], "source": old["metadata"]["source"],},
         "question": {
             "original": old["question"]["question"],
             "normalized": old["question"]["normalized-question"],
         },
-        "answers": {
-            "raw": raw,
-            "clusters": clusters,
-        },
+        "answers": {"raw": raw, "clusters": clusters,},
         "num": {"answers": num_answers, "clusters": len(clusters)},
     }
     return new
@@ -506,18 +514,12 @@ def convert_crowdsourced_old_to_new(old: Dict[str, Any]) -> Dict[str, Any]:
     num_answers = sum([cluster["count"] for cluster in clusters.values()])
     assert num_answers == old["metadata"]["totalcount"]
     new = {
-        "metadata": {
-            "id": old["metadata"]["id"],
-            "source": old["metadata"]["source"],
-        },
+        "metadata": {"id": old["metadata"]["id"], "source": old["metadata"]["source"],},
         "question": {
             "original": old["question"]["question"],
             "normalized": old["question"]["normalized-question"],
         },
-        "answers": {
-            "raw": raw,
-            "clusters": clusters,
-        },
+        "answers": {"raw": raw, "clusters": clusters,},
         "num": {"answers": num_answers, "clusters": len(clusters)},
     }
     return new
@@ -536,18 +538,12 @@ def convert_drive_files_old_to_new(old: Dict[str, Any]) -> Dict[str, Any]:
     }
     num_answers = sum([cluster["count"] for cluster in clusters.values()])
     new = {
-        "metadata": {
-            "id": question_id,
-            "source": "umass-crowdsource",
-        },
+        "metadata": {"id": question_id, "source": "umass-crowdsource",},
         "question": {
             "original": old["question"],
             "normalized": old["normalized-question"],
         },
-        "answers": {
-            "raw": raw,
-            "clusters": clusters,
-        },
+        "answers": {"raw": raw, "clusters": clusters,},
         "num": {"answers": num_answers, "clusters": len(clusters)},
     }
     return new
