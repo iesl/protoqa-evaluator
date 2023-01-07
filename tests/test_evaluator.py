@@ -1,3 +1,17 @@
+#    Copyright 2022 The ProtoQA Evaluator Authors.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
 import warnings
 from functools import partial
 from pathlib import Path
@@ -50,16 +64,13 @@ eval_methods = {
         set_intersection, score_func=jaro_winkler_similarity
     ),
     "hard_jaro_winkler_set_intersection": partial(
-        hard_set_intersection,
-        score_func=jaro_winkler_similarity,
+        hard_set_intersection, score_func=jaro_winkler_similarity,
     ),
     "hard_lcsubstring_set_int": partial(
-        hard_set_intersection,
-        score_func=longest_common_substring_score,
+        hard_set_intersection, score_func=longest_common_substring_score,
     ),
     "hard_lcsubseq_set_int": partial(
-        hard_set_intersection,
-        score_func=longest_common_subsequence_score,
+        hard_set_intersection, score_func=longest_common_subsequence_score,
     ),
     "hard_lcsubstring": partial(
         general_eval,
@@ -72,14 +83,10 @@ eval_methods = {
         score_matrix_transformation=np.round,
     ),
     "fast_money_wn_sim": partial(
-        fast_money,
-        score_func=wordnet_score,
-        score_matrix_transformation=np.round,
+        fast_money, score_func=wordnet_score, score_matrix_transformation=np.round,
     ),
     "family_feud_wn_sim": partial(
-        family_feud,
-        score_func=wordnet_score,
-        score_matrix_transformation=np.round,
+        family_feud, score_func=wordnet_score, score_matrix_transformation=np.round,
     ),
 }
 
